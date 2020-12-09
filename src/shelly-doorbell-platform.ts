@@ -1,7 +1,8 @@
 import {AccessoryPlugin, API, HAP, Logging, PlatformConfig, StaticPlatformPlugin,} from "homebridge";
-import {ExampleSwitch} from "./switch-accessory";
+import { config } from "process";
+import {ShellyDoorbell} from "./shelly-doorbell-accessory";
 
-const PLATFORM_NAME = "ExampleStaticPlatform";
+const PLATFORM_NAME = "ShellyDoorbell";
 
 /*
  * IMPORTANT NOTICE
@@ -30,19 +31,20 @@ let hap: HAP;
 export = (api: API) => {
   hap = api.hap;
 
-  api.registerPlatform(PLATFORM_NAME, ExampleStaticPlatform);
+  api.registerPlatform(PLATFORM_NAME, ShellyDoorbellPlatform);
 };
 
-class ExampleStaticPlatform implements StaticPlatformPlugin {
+class ShellyDoorbellPlatform implements StaticPlatformPlugin {
 
   private readonly log: Logging;
+  private readonly config: PlatformConfig;
 
   constructor(log: Logging, config: PlatformConfig, api: API) {
     this.log = log;
+    this.config = config;
 
     // probably parse config or something here
-
-    log.info("Example platform finished initializing!");
+    log.info("Shelly doorbell platform finished initializing!");
   }
 
   /*
@@ -52,10 +54,14 @@ class ExampleStaticPlatform implements StaticPlatformPlugin {
    * The set of exposed accessories CANNOT change over the lifetime of the plugin!
    */
   accessories(callback: (foundAccessories: AccessoryPlugin[]) => void): void {
-    callback([
-      new ExampleSwitch(hap, this.log, "Switch 1"),
-      new ExampleSwitch(hap, this.log, "Switch 2"),
-    ]);
+    this.log.info(JSON.stringify(this.config));
+    var shellyDoorbells:ShellyDoorbell[] = [];
+
+    this.config.doorbells.forEach((doorbellConfig: any) => {
+      shellyDoorbells.push(new ShellyDoorbell(hap, this.log, doorbellConfig));
+    });
+
+    callback(shellyDoorbells);
   }
 
 }

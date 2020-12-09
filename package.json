@@ -1,8 +1,8 @@
 {
-  "name": "homebridge-static-platform-example",
-  "version": "1.0.0",
-  "description": "An example static platform plugin for homebridge written in Typescript",
-  "main": "dist/static-platform.js",
+  "name": "homebridge-shelly-doorbell",
+  "version": "0.1.0",
+  "description": "A plugin to add doorbells powered by Shelly.",
+  "main": "dist/shelly-doorbell-platform.js",
   "scripts": {
     "clean": "rimraf ./dist",
     "build": "rimraf ./dist && tsc",
@@ -10,29 +10,36 @@
     "postpublish": "npm run clean",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Andreas Bauer <mail@anderl-bauer.de>",
+  "author": "sl1nd <npm@slind.de>",
   "engines": {
     "homebridge": ">=1.0.0"
   },
   "keywords": [
-    "homebridge-plugin"
+    "homebridge",
+    "homebridge-plugin",
+    "shelly",
+    "doorbell"
   ],
-  "license": "ISC",
+  "license": "MIT",
   "files": [
     "LICENSE",
-    "dist"
+    "dist",
+    "config.schema.json"
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/homebridge/homebridge-examples.git"
+    "url": "https://gitlab.com/ca-iot/homebridge-shelly-doorbell.git"
   },
   "bugs": {
-    "url": "http://github.com/homebridge/homebridge-examples/issues"
+    "url": "https://gitlab.com/ca-iot/homebridge-shelly-doorbell/issues"
   },
   "devDependencies": {
     "@types/node": "10.17.19",
-    "typescript": "^3.8.3",
+    "homebridge": "^1.0.4",
     "rimraf": "^3.0.2",
-    "homebridge": "^1.0.4"
+    "typescript": "^3.8.3"
+  },
+  "dependencies": {
+    "axios": "^0.21.0"
   }
 }
