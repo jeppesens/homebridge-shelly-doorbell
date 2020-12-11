@@ -22,7 +22,7 @@ If your existing doorbell is installed and switched like this, you can make it "
 
 **Note:** Shelly 1 supports a lot of voltages with both AC and DC on the relay, so even if your mechanical gong works with different voltages, there is a high chance that your environment is compatible with this plugin.
 
-#Hardware (Shelly 1) installation
+# Hardware (Shelly 1) installation
 
 Das besondere an diesem Setup ist, dass der Shelly 1 mit 12V DC betrieben wird, damit wir ihn mit der Türklingel verbinden können.
 
