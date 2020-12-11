@@ -30,7 +30,7 @@ The special thing about this setup is that the Shelly 1 is powered by 12V DC so 
 
 # Shelly 1 pre-configuration
 
-The plugin sets the "Button Type" of the Shelly 1 to "Activation Switch". Thereby every short press of the doorbell activates the relay for a certain time so that the gong sounds completely. Under Timer -> AUTO OFF you should set a value in seconds, how long the gong should ring until the relay switches off again. For us, the value "0.3 has turned out to be a reasonable duration.
+The plugin sets the "Button Type" of the Shelly 1 to "Activation Switch". Thereby every short press of the doorbell activates the relay for a certain time so that the gong sounds completely. Under Timer -> AUTO OFF you should set a value in seconds, how long the gong should ring until the relay switches off again. For us, the value "0.3" has turned out to be a reasonable duration.
 
 To trigger a digital gong you have to check "Enabled" on the Shelly under "I/O URL actions" -> "BUTTON SWITCHED ON URL" and set the url to the address of the Homebridge with the port of the plugin:
 

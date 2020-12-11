@@ -93,7 +93,7 @@ export class ShellyDoorbell implements AccessoryPlugin {
 
       });
 
-    this.digitalDoorbellService = new hap.Service.Doorbell(config.name);
+    this.digitalDoorbellService = new hap.Service.Doorbell(this.name);
 
     // create a webserver that can trigger digital doorbell rings
     createServer(async (request: IncomingMessage, response: ServerResponse) => {
@@ -126,7 +126,7 @@ export class ShellyDoorbell implements AccessoryPlugin {
     // link services
     this.mechanicalDoorbellSwitchService.addLinkedService(this.digitalDoorbellService);
 
-    log.info("Doorbell '%s' created!", config.name);
+    log.info("Doorbell '%s' created!", this.name);
   }
 
   /*
