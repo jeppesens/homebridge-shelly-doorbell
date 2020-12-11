@@ -36,7 +36,6 @@
               "title": "HTTP Port for the digital doorbell trigger server",
               "type": "integer",
               "maximum": 65353,
-              "placeholder": 9053,
               "required": true
             },
             "mechanicalDoorbellName": {
