@@ -24,7 +24,7 @@ If your existing doorbell is installed and switched like this, you can make it "
 
 # Hardware (Shelly 1) installation
 
-Das besondere an diesem Setup ist, dass der Shelly 1 mit 12V DC betrieben wird, damit wir ihn mit der Türklingel verbinden können.
+The special thing about this setup is that the Shelly 1 is powered by 12V DC so we can connect it to the doorbell.
 
 ![alt text](img/wiring-after-with-shelly.png "Title 1")
 
