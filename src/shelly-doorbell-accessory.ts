@@ -42,14 +42,14 @@ export class ShellyDoorbell implements AccessoryPlugin {
     this.digitalDoorbellWebhookPort = config.digitalDoorbellWebhookPort; // required
     this.mechanicalDoorbellName = config.mechanicalDoorbellName || "Mechanical gong";
     this.digitalDoorbellName = config.digitalDoorbellName || "Digital gong";
-
+    log.info("Here: " + this.digitalDoorbellWebhookPort);
 
     /*
      *
      * MECHANICAL DOORBELL SWITCH
      * 
      */
-    this.mechanicalDoorbellSwitchService = new hap.Service.Switch("Phsysischer Gong", "mechanicalDoorbellSwitch");
+    this.mechanicalDoorbellSwitchService = new hap.Service.Switch(this.mechanicalDoorbellName, "mechanicalDoorbellSwitch");
     this.mechanicalDoorbellSwitchService.getCharacteristic(hap.Characteristic.On)
       .on(CharacteristicEventTypes.GET, async (callback: CharacteristicGetCallback) => {
         let mechanicalDoorbellActive = await this.isMechanicalDoorbellActive();
