@@ -68,9 +68,9 @@
           "type": "array",
           "items": [
             "doorbells[].name",
-            "doorbells[].mechanicalDoorbellShelly1IP",
-            "doorbells[].mechanicalDoorbellName",
+            "doorbells[].shelly1IP",
             "doorbells[].digitalDoorbellWebhookPort",
+            "doorbells[].mechanicalDoorbellName",
             "doorbells[].digitalDoorbellName"
           ]
         }
