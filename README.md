@@ -34,7 +34,7 @@ The plugin sets the "Button Type" of the Shelly 1 to "Activation Switch". Thereb
 
 To trigger a digital gong you have to check "Enabled" on the Shelly under "I/O URL actions" -> "BUTTON SWITCHED ON URL" and set the url to the address of the Homebridge with the port of the plugin:
 
-**http://\<homebridge-ip\>:\<shelly-doorbell-http-port\>/**  
+**http://<homebridge-ip>:<shelly-doorbell-http-port>/**  
 **http://192.168.0.100:9053/**
 
 
