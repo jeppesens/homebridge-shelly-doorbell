@@ -37,17 +37,11 @@ export class ShellyDoorbell implements AccessoryPlugin {
 
   constructor(hap: HAP, log: Logging, config: any) {
     this.log = log;
-    this.name = config.name;
+    this.name = config.name || "Doorbell";
     this.shelly1IP = config.shelly1IP; //required
     this.digitalDoorbellWebhookPort = config.digitalDoorbellWebhookPort; // required
-
-    this.mechanicalDoorbellName = config.mechanicalDoorbellName;
-    if (this.mechanicalDoorbellName === undefined)
-      this.mechanicalDoorbellName = "Mechanical gong";
-
-    this.digitalDoorbellName = config.digitalDoorbellName
-    if (this.digitalDoorbellName === undefined)
-      this.digitalDoorbellName = "Digital gong";
+    this.mechanicalDoorbellName = config.mechanicalDoorbellName || "Mechanical gong";
+    this.digitalDoorbellName = config.digitalDoorbellName || "Digital gong";
 
     /*
      *
