@@ -1,66 +1,80 @@
 {
-    "pluginAlias": "ShellyDoorbell",
-    "pluginType": "platform",
-    "singular": true,
-    "headerDisplay": "Homebridge plugin for a Shelly 1 driven HomeKit doorbell.",
-    "footerDisplay": "Use your Shelly 1 and a 12V driver to make any two-wire doorbell smart as hell.",
-    "schema": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "title": "Name",
-          "type": "string",
-          "default": "Shelly 1-Doorbells",
-          "required": true,
-          "description": "Plugin name (visible in the log files)"
-        },
-        "doorbells": {
-          "type": "array",
-          "items": {
-            "title": "Shelly Doorbell",
-            "type": "object",
-            "properties": {
-              "name": {
-                "title": "Name",
-                "type": "string",
-                "placeholder": "Doorbell",
-                "required": true
+  "pluginAlias": "ShellyDoorbell",
+  "pluginType": "platform",
+  "singular": true,
+  "headerDisplay": "Homebridge plugin for a Shelly 1 driven HomeKit doorbell.",
+  "footerDisplay": "Use your Shelly 1 and a 12V DC driver to make any two-wire doorbell smart.",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "title": "Name",
+        "type": "string",
+        "default": "Shelly 1-Doorbells",
+        "required": false,
+        "description": "Plugin name (visible in the log files)"
+      },
+      "doorbells": {
+        "type": "array",
+        "items": {
+          "title": "Shelly Doorbell",
+          "type": "object",
+          "properties": {
+            "name": {
+              "title": "Name",
+              "type": "string",
+              "placeholder": "Doorbell",
+              "required": false
             },
-              "virtualDoorbellWebhookPort": {
-                "title": "Port number",
-                "type": "integer",
-                "maximum": 65353,
-                "placeholder": 9053,
-                "required": true
-              },
-              "physicalDoorbellShelly1IP": {
-                "title": "Shelly 1-IP",
-                "type": "string",
-                "placeholder": "192.168.13.37",
-                "required": true
-              }
+            "shelly1IP": {
+              "title": "IP of your Shelly 1",
+              "type": "string",
+              "placeholder": "192.168.0.100",
+              "required": true
+            },
+            "digitalDoorbellWebhookPort": {
+              "title": "HTTP Port for the digital doorbell trigger server",
+              "type": "integer",
+              "maximum": 65353,
+              "placeholder": 9053,
+              "required": true
+            },
+            "mechanicalDoorbellName": {
+              "title": "What is connected to the relay (slots I and O) of your Shelly?",
+              "type": "string",
+              "placeholder": "Mechanical gong",
+              "required": false
+            },
+            "digitalDoorbellName": {
+              "title": "Name for the digital doorbell",
+              "type": "string",
+              "placeholder": "Digital gong",
+              "required": false
             }
           }
         }
       }
-    },
-    "form": [
-      "name",
-      {
-        "type": "fieldset",
-        "expandable": true,
-        "title": "Doorbell Configurations",
-        "items": [
-          {
-            "key": "doorbells",
-            "type": "array",
-            "items": [
-              "doorbells[].name",
-              "doorbells[].virtualDoorbellWebhookPort",
-              "doorbells[].physicalDoorbellShelly1IP"
-            ]
-          }
-        ]
-      }
-    ]
-  }
+    }
+  },
+  "form": [
+    "name",
+    {
+      "type": "fieldset",
+      "expandable": true,
+      "title": "Doorbell Configurations",
+      "items": [
+        {
+          "key": "doorbells",
+          "type": "array",
+          "items": [
+            "doorbells[].name",
+            "doorbells[].mechanicalDoorbellShelly1IP",
+            "doorbells[].mechanicalDoorbellName",
+            "doorbells[].digitalDoorbellWebhookPort",
+            "doorbells[].digitalDoorbellName"
+          ]
+        }
+      ]
+    }
+  ]
+}
