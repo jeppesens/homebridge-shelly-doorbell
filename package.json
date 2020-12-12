@@ -1,6 +1,6 @@
 {
   "name": "homebridge-shelly-doorbell",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "A plugin to add doorbells powered by Shelly.",
   "main": "dist/shelly-doorbell-platform.js",
   "scripts": {

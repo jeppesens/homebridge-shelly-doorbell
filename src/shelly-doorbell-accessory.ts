@@ -77,7 +77,7 @@ export class ShellyDoorbell implements AccessoryPlugin {
 
     /*
      *
-     * VIRTAUL DOORBELL SWITCH
+     * DIGITAL DOORBELL SWITCH
      * 
      */
     this.digitalDoorbellSwitchService = new hap.Service.Switch(this.digitalDoorbellName, "digitalDoorbellSwitch");
@@ -124,7 +124,7 @@ export class ShellyDoorbell implements AccessoryPlugin {
 
     
     // link services
-    this.mechanicalDoorbellSwitchService.addLinkedService(this.digitalDoorbellService);
+    this.mechanicalDoorbellSwitchService.addLinkedService(this.digitalDoorbellSwitchService);
 
     log.info("Doorbell '%s' created!", this.name);
   }
