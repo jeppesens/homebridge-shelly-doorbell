@@ -124,6 +124,7 @@ export class ShellyDoorbell implements AccessoryPlugin {
 
     // Set the Shelly Device ID as Serial Number
     this.getDeviceId((deviceId: string) : void => {
+      log.info("Received device if from shelly: " + deviceId);
       this.doorbellInformationService.setCharacteristic(hap.Characteristic.SerialNumber, deviceId);
     });
     
