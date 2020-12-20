@@ -54,7 +54,6 @@ class ShellyDoorbellPlatform implements StaticPlatformPlugin {
    * The set of exposed accessories CANNOT change over the lifetime of the plugin!
    */
   accessories(callback: (foundAccessories: AccessoryPlugin[]) => void): void {
-    this.log.info(JSON.stringify(this.config));
     var shellyDoorbells:ShellyDoorbell[] = [];
 
     this.config.doorbells.forEach((doorbellConfig: any) => {

@@ -122,6 +122,10 @@ export class ShellyDoorbell implements AccessoryPlugin {
       .setCharacteristic(hap.Characteristic.Manufacturer, "sl1nd")
       .setCharacteristic(hap.Characteristic.Model, "Shelly Doorbell");
 
+    // Set the Shelly Device ID as Serial Number
+    this.getDeviceId((deviceId: string) : void => {
+      this.doorbellInformationService.setCharacteristic(hap.Characteristic.SerialNumber, deviceId);
+    });
     
     // link services
     this.mechanicalDoorbellSwitchService.addLinkedService(this.digitalDoorbellSwitchService);
@@ -170,4 +174,12 @@ export class ShellyDoorbell implements AccessoryPlugin {
     });
   }
 
+  /*
+   * Get device id as string
+   */
+  getDeviceId = (callback: (deviceId: string) => void): void => {
+    axios.get('http://'+this.shelly1IP+this.shelly1SettingsURL).then(response => {
+      callback(response.data.mac);
+    });
+  }
 }
