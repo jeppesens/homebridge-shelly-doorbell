@@ -36,7 +36,7 @@ To trigger a digital gong you have to check "Enabled" on the Shelly under "I/O U
 
 ```
 http://<homebridge-ip>:<shelly-doorbell-http-port>/ 
-http://192.168.0.100:9053/
+http://192.168.0.99:9053/
 ```
 
 
