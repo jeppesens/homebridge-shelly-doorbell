@@ -13,7 +13,7 @@ import {
   Int64
 } from "homebridge";
 import { createServer, IncomingMessage, request, ServerResponse } from 'http';
-import axios from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 import { on } from "process";
 
 export class ShellyDoorbell implements AccessoryPlugin {
@@ -34,11 +34,18 @@ export class ShellyDoorbell implements AccessoryPlugin {
 
   private readonly shelly1SettingsURL = '/settings/relay/0';
   private digitalDoorbellActive = true;
+  private axios_args: AxiosRequestConfig = {};
 
   constructor(hap: HAP, log: Logging, config: any, info: any) {
     this.log = log;
     this.name = config.name || "Doorbell";
     this.shelly1IP = config.shelly1IP; //required
+    if (config.shelly1Username) {
+      this.axios_args.auth = {
+        username: config.shelly1Username,
+        password: config.shelly1Password
+      };
+    }
     this.digitalDoorbellWebhookPort = config.digitalDoorbellWebhookPort; // required
     this.mechanicalDoorbellName = config.mechanicalDoorbellName || "Mechanical gong";
     this.digitalDoorbellName = config.digitalDoorbellName || "Digital gong";
@@ -155,7 +162,10 @@ export class ShellyDoorbell implements AccessoryPlugin {
    * setting the Button Type to "Activation Switch" (activated) or "Detached Switch" (deactivated).
    */
   setMechanicalDoorbellActive = async (active:boolean): Promise<boolean> => {
-    return await axios.get('http://'+this.shelly1IP+this.shelly1SettingsURL+'?btn_type=' + (active ? 'action' : 'detached')).then((response:any) => {
+    return await axios.get(
+      'http://'+this.shelly1IP+this.shelly1SettingsURL+'?btn_type=' + (active ? 'action' : 'detached'),
+      this.axios_args
+    ).then((response:any) => {
       return response.data.btn_type == (active ? 'action' : 'detached');
     });
   }
@@ -165,7 +175,10 @@ export class ShellyDoorbell implements AccessoryPlugin {
    * because then it doesn't activates it's relay and the mechanical gong will not be triggered.
    */
   isMechanicalDoorbellActive = async (): Promise<boolean> => {
-    return await axios.get('http://'+this.shelly1IP+this.shelly1SettingsURL).then((response:any) => {
+    return await axios.get(
+      'http://'+this.shelly1IP+this.shelly1SettingsURL,
+      this.axios_args
+    ).then((response:any) => {
       return response.data.btn_type != 'detached';
     });
   }

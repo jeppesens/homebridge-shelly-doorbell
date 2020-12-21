@@ -1,6 +1,6 @@
 import {AccessoryPlugin, API, HAP, Logging, PlatformConfig, StaticPlatformPlugin,} from "homebridge";
 import { config } from "process";
-import axios from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 import {ShellyDoorbell} from "./shelly-doorbell-accessory";
 
 const PLATFORM_NAME = "ShellyDoorbell";
@@ -59,7 +59,7 @@ class ShellyDoorbellPlatform implements StaticPlatformPlugin {
     var shellyDoorbells:ShellyDoorbell[] = [];
 
     await Promise.all(this.config.doorbells.map(async (doorbellConfig:any,doorbellIndex:number) => {
-      let deviceInfo = await this.getShellyDeviceInfo(doorbellConfig.shelly1IP);
+      let deviceInfo = await this.getShellyDeviceInfo(doorbellConfig);
       shellyDoorbells[doorbellIndex] = new ShellyDoorbell(hap, this.log, doorbellConfig, deviceInfo);
     }));
 
@@ -69,10 +69,23 @@ class ShellyDoorbellPlatform implements StaticPlatformPlugin {
   /*
    * Get device id as string
    */
-  getShellyDeviceInfo = async (ip:string): Promise<string> => {
-    return await axios.get('http://'+ip+this.shelly1DeviceInfoURL).then((response:any) => {
+  getShellyDeviceInfo = async (config:any): Promise<string> => {
+
+    let axios_args: AxiosRequestConfig = {};
+    if (config.shelly1Username) {
+      axios_args.auth = {
+        username: config.shelly1Username,
+        password: config.shelly1Password
+      };
+    }
+
+    return await axios.get(
+      'http://'+config.shelly1IP+this.shelly1DeviceInfoURL,
+      axios_args
+    ).then((response:any) => {
       return response.data;
     });
+  
   }
 
 }

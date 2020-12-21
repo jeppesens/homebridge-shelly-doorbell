@@ -60,6 +60,8 @@ http://192.168.0.99:9053/
 | --- | --- | --- |
 | name | Doorbell | Name of the doorbell |
 | shelly1IP*  | 192.168.0.100 | IP of Shelly 1 |
+| shelly1Username  | admin | Username of Shelly 1 if login is restricted |
+| shelly1Password  | password | Password of Shelly 1 if login is restricted |
 | digitalDoorbellWebhookPort*  | 9053 | HTTP Port for the digital doorbell trigger server |
 | mechanicalDoorbellName  | Mechanical gong | What is connected to the relay (slots I and O) of your Shelly? |
 | digitalDoorbellName  | Digital gong | Name for the digital doorbell |

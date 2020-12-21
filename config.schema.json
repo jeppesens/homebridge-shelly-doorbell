@@ -32,6 +32,18 @@
               "placeholder": "192.168.0.100",
               "required": true
             },
+            "shelly1Username": {
+              "title": "Username for your Shelly 1",
+              "type": "string",
+              "placeholder": "admin",
+              "required": false
+            },
+            "shelly1Password": {
+              "title": "Password for your Shelly 1",
+              "type": "string",
+              "placeholder": "password",
+              "required": false
+            },
             "digitalDoorbellWebhookPort": {
               "title": "HTTP Port for the digital doorbell trigger server",
               "type": "integer",
@@ -68,6 +80,8 @@
           "items": [
             "doorbells[].name",
             "doorbells[].shelly1IP",
+            "doorbells[].shelly1Username",
+            "doorbells[].shelly1Password",
             "doorbells[].digitalDoorbellWebhookPort",
             "doorbells[].mechanicalDoorbellName",
             "doorbells[].digitalDoorbellName"
