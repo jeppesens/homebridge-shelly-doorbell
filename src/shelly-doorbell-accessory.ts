@@ -35,7 +35,7 @@ export class ShellyDoorbell implements AccessoryPlugin {
   private readonly shelly1SettingsURL = '/settings/relay/0';
   private digitalDoorbellActive = true;
 
-  constructor(hap: HAP, log: Logging, config: any) {
+  constructor(hap: HAP, log: Logging, config: any, info: any) {
     this.log = log;
     this.name = config.name || "Doorbell";
     this.shelly1IP = config.shelly1IP; //required
@@ -120,14 +120,9 @@ export class ShellyDoorbell implements AccessoryPlugin {
 
     this.doorbellInformationService = new hap.Service.AccessoryInformation()
       .setCharacteristic(hap.Characteristic.Manufacturer, "sl1nd")
-      .setCharacteristic(hap.Characteristic.Model, "Shelly Doorbell");
+      .setCharacteristic(hap.Characteristic.Model, "Shelly Doorbell")
+      .setCharacteristic(hap.Characteristic.SerialNumber, info.mac);
 
-    // Set the Shelly Device ID as Serial Number
-    this.getDeviceId((deviceId: string) : void => {
-      log.info("Received device if from shelly: " + deviceId);
-      this.doorbellInformationService.setCharacteristic(hap.Characteristic.SerialNumber, deviceId);
-    });
-    
     // link services
     this.mechanicalDoorbellSwitchService.addLinkedService(this.digitalDoorbellSwitchService);
 
@@ -160,7 +155,7 @@ export class ShellyDoorbell implements AccessoryPlugin {
    * setting the Button Type to "Activation Switch" (activated) or "Detached Switch" (deactivated).
    */
   setMechanicalDoorbellActive = async (active:boolean): Promise<boolean> => {
-    return await axios.get('http://'+this.shelly1IP+this.shelly1SettingsURL+'?btn_type=' + (active ? 'action' : 'detached')).then((response) => {
+    return await axios.get('http://'+this.shelly1IP+this.shelly1SettingsURL+'?btn_type=' + (active ? 'action' : 'detached')).then((response:any) => {
       return response.data.btn_type == (active ? 'action' : 'detached');
     });
   }
@@ -170,17 +165,8 @@ export class ShellyDoorbell implements AccessoryPlugin {
    * because then it doesn't activates it's relay and the mechanical gong will not be triggered.
    */
   isMechanicalDoorbellActive = async (): Promise<boolean> => {
-    return await axios.get('http://'+this.shelly1IP+this.shelly1SettingsURL).then((response) => {
+    return await axios.get('http://'+this.shelly1IP+this.shelly1SettingsURL).then((response:any) => {
       return response.data.btn_type != 'detached';
-    });
-  }
-
-  /*
-   * Get device id as string
-   */
-  getDeviceId = (callback: (deviceId: string) => void): void => {
-    axios.get('http://'+this.shelly1IP+this.shelly1SettingsURL).then(response => {
-      callback(response.data.mac);
     });
   }
 }
