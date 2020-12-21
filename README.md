@@ -39,6 +39,7 @@ http://<homebridge-ip>:<shelly-doorbell-http-port>/
 http://192.168.0.99:9053/
 ```
 
+**Warning:** Please also turn off "Settings" -> "FACTORY RESET" -> "Enable factory reset from switch" so that no one can reset your shelly via the doorbell.
 
 # Plugin configuration
 
