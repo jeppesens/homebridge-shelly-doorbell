@@ -1,5 +1,6 @@
 import {AccessoryPlugin, API, HAP, Logging, PlatformConfig, StaticPlatformPlugin,} from "homebridge";
 import { config } from "process";
+import axios, { AxiosRequestConfig } from 'axios';
 import {ShellyDoorbell} from "./shelly-doorbell-accessory";
 
 const PLATFORM_NAME = "ShellyDoorbell";
@@ -38,6 +39,7 @@ class ShellyDoorbellPlatform implements StaticPlatformPlugin {
 
   private readonly log: Logging;
   private readonly config: PlatformConfig;
+  private readonly shelly1DeviceInfoURL = '/status';
 
   constructor(log: Logging, config: PlatformConfig, api: API) {
     this.log = log;
@@ -53,14 +55,37 @@ class ShellyDoorbellPlatform implements StaticPlatformPlugin {
    * it will delay the bridge startup though, so keep it to a minimum.
    * The set of exposed accessories CANNOT change over the lifetime of the plugin!
    */
-  accessories(callback: (foundAccessories: AccessoryPlugin[]) => void): void {
+  async accessories(callback: (foundAccessories: AccessoryPlugin[]) => void): Promise<void> {
     var shellyDoorbells:ShellyDoorbell[] = [];
 
-    this.config.doorbells.forEach((doorbellConfig: any) => {
-      shellyDoorbells.push(new ShellyDoorbell(hap, this.log, doorbellConfig));
-    });
+    await Promise.all(this.config.doorbells.map(async (doorbellConfig:any,doorbellIndex:number) => {
+      let deviceInfo = await this.getShellyDeviceInfo(doorbellConfig);
+      shellyDoorbells[doorbellIndex] = new ShellyDoorbell(hap, this.log, doorbellConfig, deviceInfo);
+    }));
 
     callback(shellyDoorbells);
+  }
+
+  /*
+   * Get device id as string
+   */
+  getShellyDeviceInfo = async (config:any): Promise<string> => {
+
+    let axios_args: AxiosRequestConfig = {};
+    if (config.shelly1Username) {
+      axios_args.auth = {
+        username: config.shelly1Username,
+        password: config.shelly1Password
+      };
+    }
+
+    return await axios.get(
+      'http://'+config.shelly1IP+this.shelly1DeviceInfoURL,
+      axios_args
+    ).then((response:any) => {
+      return response.data;
+    });
+  
   }
 
 }
