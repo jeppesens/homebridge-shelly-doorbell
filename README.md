@@ -2,7 +2,7 @@
 
 This Homebridge plugin, together with a [Shelly 1](https://shelly.cloud/products/shelly-1-smart-home-automation-relay/), can turn any old-fashioned two-wire doorbell into a HomeKit-compatible digital doorbell.
 
-![alt text](img/push.png "HomeKit doorbell Push Notification exmaple") 
+![alt text](https://gitlab.com/ca-iot/homebridge-shelly-doorbell/-/raw/master/img/push.png "HomeKit doorbell Push Notification exmaple") 
 
 That means you can get a push notification when someone rings your doorbell and it doesn't matter if you are at home or on the road. You can also turn your doorbell on and off via HomeKit. This enables you to integrate the doorbell into numerous automations, e.g. to turn off the doorbell automatically in the evening or to turn on a light when someone has rung the bell.
 
@@ -18,7 +18,7 @@ That means you can get a push notification when someone rings your doorbell and 
 
 If your existing doorbell is installed and switched like this, you can make it "smart" with this plugin and a Shelly 1:
 
-![alt text](img/wiring-before.png "Title 1")  
+![alt text](https://gitlab.com/ca-iot/homebridge-shelly-doorbell/-/raw/master/img/wiring-before.png "Title 1")  
 
 **Note:** Shelly 1 supports a lot of voltages with both AC and DC on the relay, so even if your mechanical gong works with different voltages, there is a high chance that your environment is compatible with this plugin.
 
@@ -26,7 +26,7 @@ If your existing doorbell is installed and switched like this, you can make it "
 
 The special thing about this setup is that the Shelly 1 is powered by 12V DC so we can connect it to the doorbell.
 
-![alt text](img/wiring-after-with-shelly.png "Title 1")
+![alt text](https://gitlab.com/ca-iot/homebridge-shelly-doorbell/-/raw/master/img/wiring-after-with-shelly.png "Title 1")
 
 # Shelly 1 pre-configuration
 
@@ -71,7 +71,7 @@ http://192.168.0.99:9053/
 Please reboot homebridge after setup is completed. Now you should see the doorbell in your default room. On the left side you can enable or disable the "digital gong" (Push Notifications, HomePod ringing, Automations,...).
 On the right side you can enable and disable your "mechanical gong". Both names can be changed via the configuration.
 
-![alt text](img/accessory-ui.png "Title 1")  
+![alt text](https://gitlab.com/ca-iot/homebridge-shelly-doorbell/-/raw/master/img/accessory-ui.png "Title 1")  
 
 **Note:** Both switches work independently from each other.
 
