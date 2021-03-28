@@ -134,7 +134,8 @@ export class ShellyDoorbell implements AccessoryPlugin {
       url,
       this.axios_args
     ).then((response) => {
-      return response.data.btn_type == (active ? 'action' : 'detached');
+      this.log.debug('Response from Shelly: ' + JSON.stringify(response.data));
+      return response.data.btn_type === (active ? 'action' : 'detached');
     }).catch((error) => {
       const msg = 'Error setting doorbell shelly button type: ' + error + ' with URL ' + url;
       this.log.error(msg);
@@ -152,7 +153,8 @@ export class ShellyDoorbell implements AccessoryPlugin {
       url,
       this.axios_args
     ).then((response) => {
-      return response.data.btn_type != 'detached';
+      this.log.debug('Response from Shelly: ' + JSON.stringify(response.data));
+      return response.data.btn_type !== 'detached';
     }).catch((error) => {
       const msg = 'Error reading doorbell shelly settings type: ' + error + ' at URL ' + url;
       this.log.error(msg);
