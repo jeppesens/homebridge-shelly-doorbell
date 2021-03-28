@@ -2,15 +2,9 @@ import { timingSafeEqual } from "crypto";
 import { appendFile } from "fs";
 import {
   AccessoryPlugin,
-  CharacteristicGetCallback,
-  CharacteristicSetCallback,
-  CharacteristicValue,
   HAP,
   Logging,
-  Service,
-  CharacteristicEventTypes,
-  Int32,
-  Int64
+  Service
 } from "homebridge";
 import { createServer, IncomingMessage, request, ServerResponse } from 'http';
 import axios, { AxiosRequestConfig } from 'axios';
@@ -23,7 +17,7 @@ export class ShellyDoorbell implements AccessoryPlugin {
   // This property must be existent!!
   name: string;
   shelly1IP: string;
-  digitalDoorbellWebhookPort: Int64;
+  digitalDoorbellWebhookPort: number;
   mechanicalDoorbellName: string;
   digitalDoorbellName: string;
 
@@ -57,30 +51,9 @@ export class ShellyDoorbell implements AccessoryPlugin {
      */
     this.mechanicalDoorbellSwitchService = new hap.Service.Switch(this.mechanicalDoorbellName, "mechanicalDoorbellSwitch");
     this.mechanicalDoorbellSwitchService.getCharacteristic(hap.Characteristic.On)
-      .on(CharacteristicEventTypes.GET, async (callback: CharacteristicGetCallback) => {
-        let mechanicalDoorbellActive = await this.isMechanicalDoorbellActive();
-        callback(undefined, mechanicalDoorbellActive);
-      })
-      .on(CharacteristicEventTypes.SET, async (active: CharacteristicValue, callback: CharacteristicSetCallback) => {
+      .onGet(() => this.isMechanicalDoorbellActive())
+      .onSet((newValue) => this.setMechanicalDoorbellActive(Boolean(newValue)));
 
-        var newMechanicalDoorbellStatusActive = active as boolean;
-        var newMechanicalDoorbellStatusSuccess = false;
-
-        try {
-          newMechanicalDoorbellStatusSuccess = await this.setMechanicalDoorbellActive(newMechanicalDoorbellStatusActive);
-        } catch (error) {
-          callback(error);
-        }
-
-        if (newMechanicalDoorbellStatusSuccess == false) {
-          log.info("Couldn't " + (newMechanicalDoorbellStatusActive ? 'activate' : 'deactivate') + " mechanical doorbell.");
-          return;
-        }
-
-        log.info("Mechanical doorbell state was set to: " + (newMechanicalDoorbellStatusActive ? "ON" : "OFF"));
-        callback(null);
-
-      });
 
     /*
      *
@@ -89,17 +62,11 @@ export class ShellyDoorbell implements AccessoryPlugin {
      */
     this.digitalDoorbellSwitchService = new hap.Service.Switch(this.digitalDoorbellName, "digitalDoorbellSwitch");
     this.digitalDoorbellSwitchService.getCharacteristic(hap.Characteristic.On)
-      .on(CharacteristicEventTypes.GET, async (callback: CharacteristicGetCallback) => {
-        callback(undefined, this.digitalDoorbellActive);
-      })
-      .on(CharacteristicEventTypes.SET, async (active: CharacteristicValue, callback: CharacteristicSetCallback) => {
+      .onGet(() => this.digitalDoorbellActive)
+      .onSet((newValue) => this.setDigitalDoorbellActive(Boolean(newValue)));
 
-        this.digitalDoorbellActive = active as boolean;
-        log.info("Digital doorbell state was set to: " + (this.digitalDoorbellActive ? "ON" : "OFF"));
-        callback(null);
-
-      });
-
+      
+      
     this.digitalDoorbellService = new hap.Service.Doorbell(this.name);
 
     // create a webserver that can trigger digital doorbell rings
@@ -161,12 +128,17 @@ export class ShellyDoorbell implements AccessoryPlugin {
    * This method can activate and deactivate the mechanical gong connected to a Shelly 1 relay by
    * setting the Button Type to "Activation Switch" (activated) or "Detached Switch" (deactivated).
    */
-  setMechanicalDoorbellActive = async (active:boolean): Promise<boolean> => {
-    return await axios.get(
-      'http://'+this.shelly1IP+this.shelly1SettingsURL+'?btn_type=' + (active ? 'action' : 'detached'),
+  async setMechanicalDoorbellActive(active:boolean): Promise<boolean> {
+    const url = 'http://'+this.shelly1IP+this.shelly1SettingsURL+'?btn_type=' + (active ? 'action' : 'detached');
+    return axios.get(
+      url,
       this.axios_args
-    ).then((response:any) => {
+    ).then((response) => {
       return response.data.btn_type == (active ? 'action' : 'detached');
+    }).catch((error) => {
+      const msg = 'Error setting doorbell shelly button type: ' + error + ' with URL ' + url;
+      this.log.error(msg);
+      throw new Error(msg);
     });
   }
 
@@ -174,12 +146,26 @@ export class ShellyDoorbell implements AccessoryPlugin {
    * This method asks the Shelly 1 device if its Button Type is set to Detached Switch
    * because then it doesn't activates it's relay and the mechanical gong will not be triggered.
    */
-  isMechanicalDoorbellActive = async (): Promise<boolean> => {
-    return await axios.get(
-      'http://'+this.shelly1IP+this.shelly1SettingsURL,
+  async isMechanicalDoorbellActive(): Promise<boolean> {
+    const url = 'http://'+this.shelly1IP+this.shelly1SettingsURL;
+    return axios.get(
+      url,
       this.axios_args
-    ).then((response:any) => {
+    ).then((response) => {
       return response.data.btn_type != 'detached';
+    }).catch((error) => {
+      const msg = 'Error reading doorbell shelly settings type: ' + error + ' at URL ' + url;
+      this.log.error(msg);
+      throw new Error(msg);
     });
+  }
+
+  /*
+   * This method can activate and deactivate the mechanical gong connected to a Shelly 1 relay by
+   * setting the Button Type to "Activation Switch" (activated) or "Detached Switch" (deactivated).
+   */
+  setDigitalDoorbellActive(active:boolean) {
+    this.digitalDoorbellActive = active;
+    this.log.info(this.digitalDoorbellName + ' was ' + (active ? 'activated' : 'disabled') + '.');
   }
 }
