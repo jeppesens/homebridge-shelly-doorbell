@@ -30,7 +30,7 @@ export class ShellyDoorbell implements AccessoryPlugin {
   private digitalDoorbellActive = true;
   private axios_args: AxiosRequestConfig = {};
 
-  constructor(hap: HAP, log: Logging, config: any, info: any) {
+  constructor(hap: HAP, log: Logging, config: any) {
     this.log = log;
     this.name = config.name || "Doorbell";
     this.shelly1IP = config.shelly1IP; //required
@@ -94,8 +94,7 @@ export class ShellyDoorbell implements AccessoryPlugin {
 
     this.doorbellInformationService = new hap.Service.AccessoryInformation()
       .setCharacteristic(hap.Characteristic.Manufacturer, "sl1nd")
-      .setCharacteristic(hap.Characteristic.Model, "Shelly Doorbell")
-      .setCharacteristic(hap.Characteristic.SerialNumber, info.mac);
+      .setCharacteristic(hap.Characteristic.Model, "Shelly Doorbell");
 
     // link services
     this.mechanicalDoorbellSwitchService.addLinkedService(this.digitalDoorbellSwitchService);
