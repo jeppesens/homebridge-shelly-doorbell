@@ -47,7 +47,14 @@ class ShellyDoorbellPlatform implements StaticPlatformPlugin {
 
     // probably parse config or something here
     const Storage = require('node-persist');
-    Storage.init({ dir: api.user.persistPath() });
+    try {
+      Storage.init({ dir: api.user.persistPath() });
+    } catch {
+      Storage.create()
+      // stattdessen /var/homebridge/persist/
+      Storage.init({ dir: api.user.persistPath() });
+
+    }
 
     log.info("Shelly doorbell platform finished initializing!");
   }
