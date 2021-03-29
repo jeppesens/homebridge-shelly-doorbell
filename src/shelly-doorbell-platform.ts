@@ -1,6 +1,5 @@
 import {AccessoryPlugin, API, HAP, Logging, PlatformConfig, StaticPlatformPlugin,} from "homebridge";
 import { config } from "process";
-import Storage from "node-persist";
 import axios, { AxiosRequestConfig } from 'axios';
 import {ShellyDoorbell} from "./shelly-doorbell-accessory";
 
@@ -47,6 +46,7 @@ class ShellyDoorbellPlatform implements StaticPlatformPlugin {
     this.config = config;
 
     // probably parse config or something here
+    const Storage = require('node-persist');
     Storage.init({ dir: api.user.persistPath() });
 
     log.info("Shelly doorbell platform finished initializing!");
