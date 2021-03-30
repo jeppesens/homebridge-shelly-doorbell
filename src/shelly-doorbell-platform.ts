@@ -1,6 +1,5 @@
 import {AccessoryPlugin, API, HAP, Logging, PlatformConfig, StaticPlatformPlugin,} from "homebridge";
 import { config } from "process";
-import axios, { AxiosRequestConfig } from 'axios';
 import {ShellyDoorbell} from "./shelly-doorbell-accessory";
 
 const PLATFORM_NAME = "ShellyDoorbell";
@@ -50,10 +49,10 @@ class ShellyDoorbellPlatform implements StaticPlatformPlugin {
     try {
       Storage.init({ dir: api.user.persistPath() });
     } catch {
-      Storage.create()
-      // stattdessen /var/homebridge/persist/
-      Storage.init({ dir: api.user.persistPath() });
-
+      //Storage.create()
+      this.log.info('/var/homebridge/persist/');
+      this.log.info(api.user.persistPath());
+      //Storage.init({ dir: api.user.persistPath() });
     }
 
     log.info("Shelly doorbell platform finished initializing!");
