@@ -55,9 +55,9 @@ export class ShellyDoorbell implements AccessoryPlugin {
   /**********************************************************************************************/
 
   constructor(api: API, log: Logging, config: any) {
+    this.log = log;
     this.log.debug('Do we pass here before 2?');
     this.api = api;
-    this.log = log;
     this.name = config.name || "Doorbell";
     this.shelly1IP = config.shelly1IP; //required
     if (config.shelly1Username) {
