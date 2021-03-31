@@ -86,10 +86,12 @@ export class ShellyDoorbell implements AccessoryPlugin {
     createServer(async (request: IncomingMessage, response: ServerResponse) => {
 
       this.doorbellRang = true;
+      this.log.info('updateing sensor');
       this.motionSensorService.getCharacteristic(hap.Characteristic.MotionDetected).updateValue(this.doorbellRang);
       setTimeout(() => {
         this.doorbellRang = false;
         this.motionSensorService.getCharacteristic(hap.Characteristic.MotionDetected).updateValue(this.doorbellRang);
+        this.log.info('updateing sensor2');
       }, 5000);
 
       if (await this.isDigitalDoorbellActive() == false) {
@@ -137,10 +139,10 @@ export class ShellyDoorbell implements AccessoryPlugin {
   getServices(): Service[] {
     return [
       this.doorbellInformationService,
+      this.motionSensorService,
       this.digitalDoorbellService,
       this.digitalDoorbellSwitchService,
       this.mechanicalDoorbellSwitchService,
-      this.motionSensorService,
     ];
   }
 
