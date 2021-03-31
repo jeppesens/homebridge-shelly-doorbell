@@ -170,18 +170,17 @@ export class ShellyDoorbell implements AccessoryPlugin {
    * setting the Button Type to "Activation Switch" (activated) or "Detached Switch" (deactivated).
    */
   /* The state of the digital doorbell is persisted to keep the user setting after every reboot */
-  private async getStorage(): Promise<LocalStorage> {
-    var path = this.api.user.storagePath() + '/plugin-persist/homebridge-shelly-doorbell';
-    this.log.debug('Writing settings to ' + path);
-    return NodePersist.create({dir: path, ttl: 3000}).init();
-  }
   get storageItemName(): string {
     return this.name + '-' + this.shelly1IP;
   }
   private _digitalDoorbellActive: boolean | null = null;
   private async isDigitalDoorbellActive() {
     if (this._digitalDoorbellActive == null) {
-      var config = await (await this.getStorage()).getItem(this.storageItemName);
+      var localStorage = NodePersist.create();
+      var path = this.api.user.storagePath() + '/plugin-persist/homebridge-shelly-doorbell';
+      await localStorage.init({ dir: path });
+
+      var config = await localStorage.getItem(this.storageItemName);
       if (config === undefined) {
         config = { digitalDoorbellActive: true };
       }
@@ -190,7 +189,10 @@ export class ShellyDoorbell implements AccessoryPlugin {
     return !!this._digitalDoorbellActive;
   }
   private async setDigitalDoorbellActive(active:boolean) {
-    await (await this.getStorage()).setItem(this.storageItemName, { digitalDoorbellActive: active });
+    var localStorage = NodePersist.create();
+    var path = this.api.user.storagePath() + '/plugin-persist/homebridge-shelly-doorbell';
+    await localStorage.init({ dir: path });
+    await localStorage.setItem(this.storageItemName, { digitalDoorbellActive: active });
     this._digitalDoorbellActive = active;
     this.log.info(this.digitalDoorbellName + ' was ' + (active ? 'activated' : 'disabled') + '.');
   }
