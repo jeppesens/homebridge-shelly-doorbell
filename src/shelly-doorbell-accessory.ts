@@ -33,6 +33,7 @@ export class ShellyDoorbell implements AccessoryPlugin {
   /* The state of the digital doorbell is persisted to keep the user setting after every reboot */
   get storage() {
     var storage = require('node-persist');
+    this.log.debug('Do we pass here before 1?');
     var path = this.api.user.storagePath() + '/plugin-persist/homebridge-shelly-doorbell';
     this.log.debug('Writing settings to ' + path);
     return storage.create({dir: path, ttl: 3000}).initSync();
@@ -54,6 +55,7 @@ export class ShellyDoorbell implements AccessoryPlugin {
   /**********************************************************************************************/
 
   constructor(api: API, log: Logging, config: any) {
+    this.log.debug('Do we pass here before 2?');
     this.api = api;
     this.log = log;
     this.name = config.name || "Doorbell";
@@ -96,6 +98,7 @@ export class ShellyDoorbell implements AccessoryPlugin {
     // create a webserver that can trigger digital doorbell rings
     createServer(async (request: IncomingMessage, response: ServerResponse) => {
 
+      this.log.debug('Do we pass here before 3?');
       if (this.digitalDoorbellActive == false) {
         log.info("Somebody rang the (digital) doorbell, but this was ignored because it's muted!");
         response.end('Digital doorbell was ignored because it is muted.');
