@@ -190,7 +190,7 @@ export class ShellyDoorbell implements AccessoryPlugin {
   }
   private async setDigitalDoorbellActive(active:boolean) {
     const nodePersist = require('node-persist');
-    await nodePersist.setItemSync(this.storageItemName, { digitalDoorbellActive: active });
+    await nodePersist.setItem(this.storageItemName, { digitalDoorbellActive: active });
     this._digitalDoorbellActive = active;
     this.log.info(this.digitalDoorbellName + ' was ' + (active ? 'activated' : 'disabled') + '.');
   }
