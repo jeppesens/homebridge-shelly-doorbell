@@ -182,7 +182,9 @@ export class ShellyDoorbell implements AccessoryPlugin {
   private async isDigitalDoorbellActive() {
     if (this._digitalDoorbellActive == null) {
       var config = await (await this.getStorage()).getItem(this.storageItemName);
-      this.log.info('Here we go: ' + config);
+      if (config === undefined) {
+        config = { digitalDoorbellActive: true };
+      }
       this._digitalDoorbellActive = config.digitalDoorbellActive;
     }
     return !!this._digitalDoorbellActive;
