@@ -75,7 +75,10 @@ export class ShellyDoorbell implements AccessoryPlugin {
      */
     this.motionSensorService = new hap.Service.MotionSensor(this.digitalDoorbellName, "doorbellMotionSensor");
     this.motionSensorService.getCharacteristic(hap.Characteristic.MotionDetected)
-      .onGet(() => this.doorbellRang)
+      .onGet(() => {
+        this.log.info('Homekit asked for me...');
+        return this.doorbellRang;
+      });
 
     this.digitalDoorbellService = new hap.Service.Doorbell(this.name);
 
