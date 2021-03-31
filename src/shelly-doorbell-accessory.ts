@@ -166,20 +166,10 @@ export class ShellyDoorbell implements AccessoryPlugin {
   }
 
   /*
-   * This method can activate and deactivate the mechanical gong connected to a Shelly 1 relay by
-   * setting the Button Type to "Activation Switch" (activated) or "Detached Switch" (deactivated).
+   * The state of the digital doorbell is persisted to keep the user setting after every reboot.
    */
-  /* The state of the digital doorbell is persisted to keep the user setting after every reboot */
-  get storageItemName(): string {
-    return this.name + '-' + this.shelly1IP;
-  }
-  async getLocalStorage(): Promise<LocalStorage> {
-    var localStorage = NodePersist.create();
-    var path = this.api.user.storagePath() + '/plugin-persist/homebridge-shelly-doorbell';
-    await localStorage.init({ dir: path });
-    return localStorage;
-  }
   private _digitalDoorbellActive: boolean | null = null;
+
   private async isDigitalDoorbellActive() {
     if (this._digitalDoorbellActive == null) {
       const localStorage = await this.getLocalStorage();
@@ -189,13 +179,25 @@ export class ShellyDoorbell implements AccessoryPlugin {
       }
       this._digitalDoorbellActive = config.digitalDoorbellActive;
     }
-    return !!this._digitalDoorbellActive;
+    return this._digitalDoorbellActive;
   }
+
   private async setDigitalDoorbellActive(active:boolean) {
     const localStorage = await this.getLocalStorage();
     await localStorage.setItem(this.storageItemName, { digitalDoorbellActive: active });
     this._digitalDoorbellActive = active;
     this.log.info(this.digitalDoorbellName + ' was ' + (active ? 'activated' : 'disabled') + '.');
+  }
+
+  async getLocalStorage(): Promise<LocalStorage> {
+    var localStorage = NodePersist.create();
+    var path = this.api.user.storagePath() + '/plugin-persist/homebridge-shelly-doorbell';
+    await localStorage.init({ dir: path });
+    return localStorage;
+  }
+
+  get storageItemName(): string {
+    return this.name + '-' + this.shelly1IP;
   }
   /**********************************************************************************************/
 }
