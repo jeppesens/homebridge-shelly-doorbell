@@ -23,11 +23,13 @@ export class ShellyDoorbell implements AccessoryPlugin {
   digitalDoorbellWebhookPort: number;
   mechanicalDoorbellName: string;
   digitalDoorbellName: string;
+  doorbellRang = false;
 
   private readonly doorbellInformationService: Service; // Shows information about this accessory
   private readonly digitalDoorbellService: Service; // The HomeKit service for doorbell events
   private readonly digitalDoorbellSwitchService: Service; // A switch to turn digital doorbell ringing on and off
   private readonly mechanicalDoorbellSwitchService: Service; // A switch to turn the mechanical door gong on and off
+  private readonly motionSensorService: Service; // The HomeKit service for doorbell events
 
   private readonly shelly1SettingsURL = '/settings/relay/0';
   private axios_args: AxiosRequestConfig = {};
@@ -68,14 +70,25 @@ export class ShellyDoorbell implements AccessoryPlugin {
       .onGet(() => this.isDigitalDoorbellActive())
       .onSet((newValue) => this.setDigitalDoorbellActive(Boolean(newValue)));
 
-      
-      
+    /*
+     * MOTION SENSOR
+     */
+    this.motionSensorService = new hap.Service.MotionSensor(this.digitalDoorbellName, "doorbellMotionSensor");
+    this.motionSensorService.getCharacteristic(hap.Characteristic.MotionDetected)
+      .onGet(() => this.doorbellRang)
+
     this.digitalDoorbellService = new hap.Service.Doorbell(this.name);
 
     // create a webserver that can trigger digital doorbell rings
     createServer(async (request: IncomingMessage, response: ServerResponse) => {
 
-      this.log.debug('Do we pass here before 3?');
+      this.doorbellRang = true;
+      this.motionSensorService.getCharacteristic(hap.Characteristic.MotionDetected).updateValue(this.doorbellRang);
+      setTimeout(() => {
+        this.doorbellRang = false;
+        this.motionSensorService.getCharacteristic(hap.Characteristic.MotionDetected).updateValue(this.doorbellRang);
+      }, 5000);
+
       if (await this.isDigitalDoorbellActive() == false) {
         log.info("Somebody rang the (digital) doorbell, but this was ignored because it's muted!");
         response.end('Digital doorbell was ignored because it is muted.');
@@ -124,6 +137,7 @@ export class ShellyDoorbell implements AccessoryPlugin {
       this.digitalDoorbellService,
       this.digitalDoorbellSwitchService,
       this.mechanicalDoorbellSwitchService,
+      this.motionSensorService,
     ];
   }
 
