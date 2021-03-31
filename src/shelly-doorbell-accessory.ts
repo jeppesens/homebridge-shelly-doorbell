@@ -36,7 +36,8 @@ export class ShellyDoorbell implements AccessoryPlugin {
     var storage = require('node-persist');
     var path = this.api.user.storagePath() + '/plugin-persist/homebridge-shelly-doorbell';
     this.log.debug('Writing settings to ' + path);
-    return storage.create({dir: path, ttl: 3000}).initSync();
+    storage.create({dir: path, ttl: 3000});
+    return storage.initSync();
   }
   get storageItemName(): string {
     return this.name + '-' + this.shelly1IP;
