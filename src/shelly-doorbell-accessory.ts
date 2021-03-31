@@ -32,12 +32,13 @@ export class ShellyDoorbell implements AccessoryPlugin {
   private axios_args: AxiosRequestConfig = {};
 
   /* The state of the digital doorbell is persisted to keep the user setting after every reboot */
-  get storage() {
-    var storage = require('node-persist');
+  private async getStorage() {
+    const nodePersist = require('node-persist');
     var path = this.api.user.storagePath() + '/plugin-persist/homebridge-shelly-doorbell';
     this.log.debug('Writing settings to ' + path);
-    storage.create({dir: path, ttl: 3000});
-    return storage.initSync();
+    nodePersist.initSync({dir: path, ttl: 3000});
+    nodePersist.initSync({ dir: path });
+    return nodePersist;
   }
   get storageItemName(): string {
     return this.name + '-' + this.shelly1IP;
@@ -45,12 +46,14 @@ export class ShellyDoorbell implements AccessoryPlugin {
   private _digitalDoorbellActive: boolean | null = null;
   get digitalDoorbellActive() {
     if (this._digitalDoorbellActive == null) {
-      return this.storage.getItemSync(this.storageItemName).digitalDoorbellActive;
+      const nodePersist = require('node-persist');
+      return nodePersist.getItemSync(this.storageItemName).digitalDoorbellActive;
     }
     return this._digitalDoorbellActive;
   }
   set digitalDoorbellActive(active) {
-    this.storage.setItemSync(this.storageItemName, { digitalDoorbellActive: active });
+    const nodePersist = require('node-persist');
+    nodePersist.setItemSync(this.storageItemName, { digitalDoorbellActive: active });
     this._digitalDoorbellActive = active;
   }
   /**********************************************************************************************/
