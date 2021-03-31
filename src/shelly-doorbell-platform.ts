@@ -1,7 +1,6 @@
 import {AccessoryPlugin, API, HAP, Logging, PlatformConfig, StaticPlatformPlugin,} from "homebridge";
 import { config } from "process";
 import {ShellyDoorbell} from "./shelly-doorbell-accessory";
-
 const PLATFORM_NAME = "ShellyDoorbell";
 
 /*
@@ -26,10 +25,10 @@ const PLATFORM_NAME = "ShellyDoorbell";
  * of the api object, which can be acquired for example in the initializer function. This reference can be stored
  * like this for example and used to access all exported variables and classes from HAP-NodeJS.
  */
-let hap: HAP;
+let api: API;
 
 export = (api: API) => {
-  hap = api.hap;
+  api = api;
 
   api.registerPlatform(PLATFORM_NAME, ShellyDoorbellPlatform);
 };
@@ -37,6 +36,7 @@ export = (api: API) => {
 class ShellyDoorbellPlatform implements StaticPlatformPlugin {
 
   private readonly log: Logging;
+
   private readonly config: PlatformConfig;
   private readonly shelly1DeviceInfoURL = '/status';
 
@@ -45,16 +45,6 @@ class ShellyDoorbellPlatform implements StaticPlatformPlugin {
     this.config = config;
 
     // probably parse config or something here
-    const Storage = require('node-persist');
-    try {
-      Storage.init({ dir: api.user.persistPath() });
-    } catch {
-      //Storage.create()
-      this.log.info('/var/homebridge/persist/');
-      this.log.info(api.user.persistPath());
-      //Storage.init({ dir: api.user.persistPath() });
-    }
-
     log.info("Shelly doorbell platform finished initializing!");
   }
 
@@ -68,7 +58,7 @@ class ShellyDoorbellPlatform implements StaticPlatformPlugin {
     var shellyDoorbells:ShellyDoorbell[] = [];
 
     await Promise.all(this.config.doorbells.map(async (doorbellConfig:any,doorbellIndex:number) => {
-      shellyDoorbells[doorbellIndex] = new ShellyDoorbell(hap, this.log, doorbellConfig);
+      shellyDoorbells[doorbellIndex] = new ShellyDoorbell(api, this.log, doorbellConfig);
     }));
 
     callback(shellyDoorbells);
