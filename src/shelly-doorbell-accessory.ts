@@ -73,7 +73,7 @@ export class ShellyDoorbell implements AccessoryPlugin {
     /*
      * MOTION SENSOR
      */
-    this.motionSensorService = new hap.Service.MotionSensor(this.digitalDoorbellName, "doorbellMotionSensor");
+    this.motionSensorService = new hap.Service.MotionSensor(this.name, "doorbellMotionSensor");
     this.motionSensorService.getCharacteristic(hap.Characteristic.MotionDetected)
       .onGet(() => {
         this.log.info('Homekit asked for me...');
@@ -85,14 +85,7 @@ export class ShellyDoorbell implements AccessoryPlugin {
     // create a webserver that can trigger digital doorbell rings
     createServer(async (request: IncomingMessage, response: ServerResponse) => {
 
-      this.doorbellRang = true;
-      this.log.info('updateing sensor');
-      this.motionSensorService.getCharacteristic(hap.Characteristic.MotionDetected).updateValue(this.doorbellRang);
-      setTimeout(() => {
-        this.doorbellRang = false;
-        this.motionSensorService.getCharacteristic(hap.Characteristic.MotionDetected).updateValue(this.doorbellRang);
-        this.log.info('updateing sensor2');
-      }, 5000);
+      this.doorbellMotionDetected();
 
       if (await this.isDigitalDoorbellActive() == false) {
         log.info("Somebody rang the (digital) doorbell, but this was ignored because it's muted!");
@@ -139,10 +132,10 @@ export class ShellyDoorbell implements AccessoryPlugin {
   getServices(): Service[] {
     return [
       this.doorbellInformationService,
-      this.motionSensorService,
       this.digitalDoorbellService,
       this.digitalDoorbellSwitchService,
       this.mechanicalDoorbellSwitchService,
+      this.motionSensorService,
     ];
   }
 
@@ -218,5 +211,16 @@ export class ShellyDoorbell implements AccessoryPlugin {
   get storageItemName(): string {
     return this.name + '-' + this.shelly1IP;
   }
-  /**********************************************************************************************/
+
+  /*
+   * Trigger the Motion sensor and set it back after 5 seconds.
+   */
+  private doorbellMotionDetected() {
+    this.doorbellRang = true;
+    this.motionSensorService.getCharacteristic(this.api.hap.Characteristic.MotionDetected).updateValue(this.doorbellRang);
+    setTimeout(() => {
+      this.doorbellRang = false;
+      this.motionSensorService.getCharacteristic(this.api.hap.Characteristic.MotionDetected).updateValue(this.doorbellRang);
+    }, 5000);
+  }
 }
