@@ -173,25 +173,26 @@ export class ShellyDoorbell implements AccessoryPlugin {
   get storageItemName(): string {
     return this.name + '-' + this.shelly1IP;
   }
+  async getLocalStorage(): Promise<LocalStorage> {
+    var localStorage = NodePersist.create();
+    var path = this.api.user.storagePath() + '/plugin-persist/homebridge-shelly-doorbell';
+    await localStorage.init({ dir: path });
+    return localStorage;
+  }
   private _digitalDoorbellActive: boolean | null = null;
   private async isDigitalDoorbellActive() {
     if (this._digitalDoorbellActive == null) {
-      var localStorage = NodePersist.create();
-      var path = this.api.user.storagePath() + '/plugin-persist/homebridge-shelly-doorbell';
-      await localStorage.init({ dir: path });
-
+      const localStorage = await this.getLocalStorage();
       var config = await localStorage.getItem(this.storageItemName);
       if (config === undefined) {
-        config = { digitalDoorbellActive: true };
+        config = { digitalDoorbellActive: true }; // default state is on
       }
       this._digitalDoorbellActive = config.digitalDoorbellActive;
     }
     return !!this._digitalDoorbellActive;
   }
   private async setDigitalDoorbellActive(active:boolean) {
-    var localStorage = NodePersist.create();
-    var path = this.api.user.storagePath() + '/plugin-persist/homebridge-shelly-doorbell';
-    await localStorage.init({ dir: path });
+    const localStorage = await this.getLocalStorage();
     await localStorage.setItem(this.storageItemName, { digitalDoorbellActive: active });
     this._digitalDoorbellActive = active;
     this.log.info(this.digitalDoorbellName + ' was ' + (active ? 'activated' : 'disabled') + '.');
