@@ -3,6 +3,7 @@ import { appendFile } from "fs";
 import {
   AccessoryPlugin,
   API,
+  HAP,
   Logging,
   Service
 } from "homebridge";
@@ -33,7 +34,6 @@ export class ShellyDoorbell implements AccessoryPlugin {
   /* The state of the digital doorbell is persisted to keep the user setting after every reboot */
   get storage() {
     var storage = require('node-persist');
-    this.log.debug('Do we pass here before 1?');
     var path = this.api.user.storagePath() + '/plugin-persist/homebridge-shelly-doorbell';
     this.log.debug('Writing settings to ' + path);
     return storage.create({dir: path, ttl: 3000}).initSync();
@@ -54,9 +54,8 @@ export class ShellyDoorbell implements AccessoryPlugin {
   }
   /**********************************************************************************************/
 
-  constructor(api: API, log: Logging, config: any) {
+  constructor(api: API, hap: HAP, log: Logging, config: any) {
     this.log = log;
-    this.log.debug('Do we pass here before 2?');
     this.api = api;
     this.name = config.name || "Doorbell";
     this.shelly1IP = config.shelly1IP; //required
@@ -75,8 +74,8 @@ export class ShellyDoorbell implements AccessoryPlugin {
      * MECHANICAL DOORBELL SWITCH
      * 
      */
-    this.mechanicalDoorbellSwitchService = new api.hap.Service.Switch(this.mechanicalDoorbellName, "mechanicalDoorbellSwitch");
-    this.mechanicalDoorbellSwitchService.getCharacteristic(api.hap.Characteristic.On)
+    this.mechanicalDoorbellSwitchService = new hap.Service.Switch(this.mechanicalDoorbellName, "mechanicalDoorbellSwitch");
+    this.mechanicalDoorbellSwitchService.getCharacteristic(hap.Characteristic.On)
       .onGet(() => this.isMechanicalDoorbellActive())
       .onSet((newValue) => this.setMechanicalDoorbellActive(Boolean(newValue)));
 
@@ -86,14 +85,14 @@ export class ShellyDoorbell implements AccessoryPlugin {
      * DIGITAL DOORBELL SWITCH
      * 
      */
-    this.digitalDoorbellSwitchService = new api.hap.Service.Switch(this.digitalDoorbellName, "digitalDoorbellSwitch");
-    this.digitalDoorbellSwitchService.getCharacteristic(api.hap.Characteristic.On)
+    this.digitalDoorbellSwitchService = new hap.Service.Switch(this.digitalDoorbellName, "digitalDoorbellSwitch");
+    this.digitalDoorbellSwitchService.getCharacteristic(hap.Characteristic.On)
       .onGet(() => this.digitalDoorbellActive)
       .onSet((newValue) => this.setDigitalDoorbellActive(Boolean(newValue)));
 
       
       
-    this.digitalDoorbellService = new api.hap.Service.Doorbell(this.name);
+    this.digitalDoorbellService = new hap.Service.Doorbell(this.name);
 
     // create a webserver that can trigger digital doorbell rings
     createServer(async (request: IncomingMessage, response: ServerResponse) => {
@@ -106,7 +105,7 @@ export class ShellyDoorbell implements AccessoryPlugin {
       }
 
       // tell homekit to ring the bell
-      this.digitalDoorbellService.getCharacteristic(api.hap.Characteristic.ProgrammableSwitchEvent).updateValue(0);
+      this.digitalDoorbellService.getCharacteristic(hap.Characteristic.ProgrammableSwitchEvent).updateValue(0);
       response.end('Doorbell rang!');
 
     }).listen(this.digitalDoorbellWebhookPort, () => {
@@ -119,9 +118,9 @@ export class ShellyDoorbell implements AccessoryPlugin {
      * 
      */
 
-    this.doorbellInformationService = new api.hap.Service.AccessoryInformation()
-      .setCharacteristic(api.hap.Characteristic.Manufacturer, "sl1nd")
-      .setCharacteristic(api.hap.Characteristic.Model, "Shelly Doorbell");
+    this.doorbellInformationService = new hap.Service.AccessoryInformation()
+      .setCharacteristic(hap.Characteristic.Manufacturer, "sl1nd")
+      .setCharacteristic(hap.Characteristic.Model, "Shelly Doorbell");
 
     // link services
     this.mechanicalDoorbellSwitchService.addLinkedService(this.digitalDoorbellSwitchService);

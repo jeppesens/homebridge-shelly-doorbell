@@ -25,22 +25,24 @@ const PLATFORM_NAME = "ShellyDoorbell";
  * of the api object, which can be acquired for example in the initializer function. This reference can be stored
  * like this for example and used to access all exported variables and classes from HAP-NodeJS.
  */
-let api: API;
+let hap: HAP;
 
 export = (api: API) => {
-  api = api;
+  hap = api.hap;
 
   api.registerPlatform(PLATFORM_NAME, ShellyDoorbellPlatform);
 };
 
 class ShellyDoorbellPlatform implements StaticPlatformPlugin {
 
+  private readonly api: API;
   private readonly log: Logging;
 
   private readonly config: PlatformConfig;
   private readonly shelly1DeviceInfoURL = '/status';
 
   constructor(log: Logging, config: PlatformConfig, api: API) {
+    this.api = api;
     this.log = log;
     this.config = config;
 
@@ -58,7 +60,7 @@ class ShellyDoorbellPlatform implements StaticPlatformPlugin {
     var shellyDoorbells:ShellyDoorbell[] = [];
 
     await Promise.all(this.config.doorbells.map(async (doorbellConfig:any,doorbellIndex:number) => {
-      shellyDoorbells[doorbellIndex] = new ShellyDoorbell(api, this.log, doorbellConfig);
+      shellyDoorbells[doorbellIndex] = new ShellyDoorbell(this.api, hap, this.log, doorbellConfig);
     }));
 
     callback(shellyDoorbells);
