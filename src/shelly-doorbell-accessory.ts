@@ -173,7 +173,7 @@ export class ShellyDoorbell implements AccessoryPlugin {
   private async getStorage(): Promise<LocalStorage> {
     var path = this.api.user.storagePath() + '/plugin-persist/homebridge-shelly-doorbell';
     this.log.debug('Writing settings to ' + path);
-    return NodePersist.create({dir: path, ttl: 3000});
+    return NodePersist.init({dir: path, ttl: 3000});
   }
   get storageItemName(): string {
     return this.name + '-' + this.shelly1IP;
