@@ -1,16 +1,7 @@
-import { timingSafeEqual } from "crypto";
-import { appendFile } from "fs";
-import {
-  AccessoryPlugin,
-  API,
-  HAP,
-  Logging,
-  Service
-} from "homebridge";
+import { AccessoryPlugin, API, HAP, Logging, Service } from "homebridge";
 import { createServer, IncomingMessage, request, ServerResponse } from 'http';
 import axios, { AxiosRequestConfig } from 'axios';
 import NodePersist, { LocalStorage } from 'node-persist';
-import { on } from "process";
 
 export class ShellyDoorbell implements AccessoryPlugin {
 
@@ -70,15 +61,15 @@ export class ShellyDoorbell implements AccessoryPlugin {
       .onGet(() => this.isDigitalDoorbellActive())
       .onSet((newValue) => this.setDigitalDoorbellActive(Boolean(newValue)));
 
+      
     /*
+     *
      * MOTION SENSOR
+     *
      */
     this.motionSensorService = new hap.Service.MotionSensor(this.name, "doorbellMotionSensor");
     this.motionSensorService.getCharacteristic(hap.Characteristic.MotionDetected)
-      .onGet(() => {
-        this.log.info('Homekit asked for me...');
-        return this.doorbellRang;
-      });
+      .onGet(() => this.doorbellRang);
 
     this.digitalDoorbellService = new hap.Service.Doorbell(this.name);
 
