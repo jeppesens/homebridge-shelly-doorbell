@@ -31,33 +31,6 @@ export class ShellyDoorbell implements AccessoryPlugin {
   private readonly shelly1SettingsURL = '/settings/relay/0';
   private axios_args: AxiosRequestConfig = {};
 
-  /* The state of the digital doorbell is persisted to keep the user setting after every reboot */
-  private async getStorage() {
-    const nodePersist = require('node-persist');
-    var path = this.api.user.storagePath() + '/plugin-persist/homebridge-shelly-doorbell';
-    this.log.debug('Writing settings to ' + path);
-    nodePersist.initSync({dir: path, ttl: 3000});
-    nodePersist.initSync({ dir: path });
-    return nodePersist;
-  }
-  get storageItemName(): string {
-    return this.name + '-' + this.shelly1IP;
-  }
-  private _digitalDoorbellActive: boolean | null = null;
-  get digitalDoorbellActive() {
-    if (this._digitalDoorbellActive == null) {
-      const nodePersist = require('node-persist');
-      return nodePersist.getItemSync(this.storageItemName).digitalDoorbellActive;
-    }
-    return this._digitalDoorbellActive;
-  }
-  set digitalDoorbellActive(active) {
-    const nodePersist = require('node-persist');
-    nodePersist.setItemSync(this.storageItemName, { digitalDoorbellActive: active });
-    this._digitalDoorbellActive = active;
-  }
-  /**********************************************************************************************/
-
   constructor(api: API, hap: HAP, log: Logging, config: any) {
     this.log = log;
     this.api = api;
@@ -91,7 +64,7 @@ export class ShellyDoorbell implements AccessoryPlugin {
      */
     this.digitalDoorbellSwitchService = new hap.Service.Switch(this.digitalDoorbellName, "digitalDoorbellSwitch");
     this.digitalDoorbellSwitchService.getCharacteristic(hap.Characteristic.On)
-      .onGet(() => this.digitalDoorbellActive)
+      .onGet(() => this.isDigitalDoorbellActive())
       .onSet((newValue) => this.setDigitalDoorbellActive(Boolean(newValue)));
 
       
@@ -102,7 +75,7 @@ export class ShellyDoorbell implements AccessoryPlugin {
     createServer(async (request: IncomingMessage, response: ServerResponse) => {
 
       this.log.debug('Do we pass here before 3?');
-      if (this.digitalDoorbellActive == false) {
+      if (await this.isDigitalDoorbellActive() == false) {
         log.info("Somebody rang the (digital) doorbell, but this was ignored because it's muted!");
         response.end('Digital doorbell was ignored because it is muted.');
         return;
@@ -195,8 +168,31 @@ export class ShellyDoorbell implements AccessoryPlugin {
    * This method can activate and deactivate the mechanical gong connected to a Shelly 1 relay by
    * setting the Button Type to "Activation Switch" (activated) or "Detached Switch" (deactivated).
    */
-  setDigitalDoorbellActive(active:boolean) {
-    this.digitalDoorbellActive = active;
+  /* The state of the digital doorbell is persisted to keep the user setting after every reboot */
+  private async getStorage() {
+    const nodePersist = require('node-persist');
+    var path = this.api.user.storagePath() + '/plugin-persist/homebridge-shelly-doorbell';
+    this.log.debug('Writing settings to ' + path);
+    await nodePersist.init({dir: path, ttl: 3000});
+    return nodePersist;
+  }
+  get storageItemName(): string {
+    return this.name + '-' + this.shelly1IP;
+  }
+  private _digitalDoorbellActive: boolean | null = null;
+  private async isDigitalDoorbellActive() {
+    if (this._digitalDoorbellActive == null) {
+      const nodePersist = require('node-persist');
+      var config = await nodePersist.getItem(this.storageItemName);
+      this._digitalDoorbellActive = config.digitalDoorbellActive;
+    }
+    return !!this._digitalDoorbellActive;
+  }
+  private async setDigitalDoorbellActive(active:boolean) {
+    const nodePersist = require('node-persist');
+    await nodePersist.setItemSync(this.storageItemName, { digitalDoorbellActive: active });
+    this._digitalDoorbellActive = active;
     this.log.info(this.digitalDoorbellName + ' was ' + (active ? 'activated' : 'disabled') + '.');
   }
+  /**********************************************************************************************/
 }
