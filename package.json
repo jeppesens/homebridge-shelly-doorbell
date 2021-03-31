@@ -46,6 +46,7 @@
   "dependencies": {
     "@types/node-persist": "^3.1.1",
     "axios": "^0.21.0",
+    "node-persist": "^3.1.0",
     "promise-socket": "^7.0.0"
   }
 }
