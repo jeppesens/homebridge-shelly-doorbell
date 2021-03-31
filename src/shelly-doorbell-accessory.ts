@@ -9,6 +9,7 @@ import {
 } from "homebridge";
 import { createServer, IncomingMessage, request, ServerResponse } from 'http';
 import axios, { AxiosRequestConfig } from 'axios';
+import NodePersist, { LocalStorage } from 'node-persist';
 import { on } from "process";
 
 export class ShellyDoorbell implements AccessoryPlugin {
@@ -169,12 +170,10 @@ export class ShellyDoorbell implements AccessoryPlugin {
    * setting the Button Type to "Activation Switch" (activated) or "Detached Switch" (deactivated).
    */
   /* The state of the digital doorbell is persisted to keep the user setting after every reboot */
-  private async getStorage() {
-    const nodePersist = require('node-persist');
+  private async getStorage(): Promise<LocalStorage> {
     var path = this.api.user.storagePath() + '/plugin-persist/homebridge-shelly-doorbell';
     this.log.debug('Writing settings to ' + path);
-    await nodePersist.init({dir: path, ttl: 3000});
-    return nodePersist;
+    return NodePersist.create({dir: path, ttl: 3000});
   }
   get storageItemName(): string {
     return this.name + '-' + this.shelly1IP;
@@ -182,15 +181,13 @@ export class ShellyDoorbell implements AccessoryPlugin {
   private _digitalDoorbellActive: boolean | null = null;
   private async isDigitalDoorbellActive() {
     if (this._digitalDoorbellActive == null) {
-      const nodePersist = require('node-persist');
-      var config = await nodePersist.getItem(this.storageItemName);
+      var config = await (await this.getStorage()).getItem(this.storageItemName);
       this._digitalDoorbellActive = config.digitalDoorbellActive;
     }
     return !!this._digitalDoorbellActive;
   }
   private async setDigitalDoorbellActive(active:boolean) {
-    const nodePersist = require('node-persist');
-    await nodePersist.setItem(this.storageItemName, { digitalDoorbellActive: active });
+    await (await this.getStorage()).setItem(this.storageItemName, { digitalDoorbellActive: active });
     this._digitalDoorbellActive = active;
     this.log.info(this.digitalDoorbellName + ' was ' + (active ? 'activated' : 'disabled') + '.');
   }
