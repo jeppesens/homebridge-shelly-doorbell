@@ -4,7 +4,7 @@ This Homebridge plugin, together with a [Shelly 1](https://shelly.cloud/products
 
 ![alt text](img/push.png "HomeKit doorbell Push Notification exmaple") 
 
-That means you can get a push notification when someone rings your doorbell and it doesn't matter if you are at home or on the road. You can also turn your doorbell on and off via HomeKit. This enables you to integrate the doorbell into numerous automations, e.g. to turn off the doorbell automatically in the evening or to turn on a light when someone has rung the bell.
+That means you can get a push notification when someone rings your doorbell and it doesn't matter if you are at home or on the road. You can also turn your doorbell on and off via HomeKit. This enables you to integrate the doorbell into numerous automations, e.g. to turn off the doorbell automatically in the evening. The integrated motion sensor makes it possible to trigger automations when the bell is pressed.
 
 **Requirements**  
 
