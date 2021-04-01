@@ -1,5 +1,5 @@
-import { AccessoryPlugin, API, HAP, Logging, Service } from "homebridge";
-import { createServer, IncomingMessage, request, ServerResponse } from 'http';
+import { AccessoryPlugin, API, HAP, Logging, Service } from 'homebridge';
+import { createServer, IncomingMessage, ServerResponse } from 'http';
 import axios, { AxiosRequestConfig } from 'axios';
 import NodePersist, { LocalStorage } from 'node-persist';
 
@@ -25,27 +25,28 @@ export class ShellyDoorbell implements AccessoryPlugin {
   private readonly shelly1SettingsURL = '/settings/relay/0';
   private axios_args: AxiosRequestConfig = {};
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(api: API, hap: HAP, log: Logging, config: any) {
     this.log = log;
     this.api = api;
-    this.name = config.name || "Doorbell";
+    this.name = config.name || 'Doorbell';
     this.shelly1IP = config.shelly1IP; //required
     if (config.shelly1Username) {
       this.axios_args.auth = {
         username: config.shelly1Username,
-        password: config.shelly1Password
+        password: config.shelly1Password,
       };
     }
     this.digitalDoorbellWebhookPort = config.digitalDoorbellWebhookPort; // required
-    this.mechanicalDoorbellName = config.mechanicalDoorbellName || "Mechanical gong";
-    this.digitalDoorbellName = config.digitalDoorbellName || "Digital gong";
+    this.mechanicalDoorbellName = config.mechanicalDoorbellName || 'Mechanical gong';
+    this.digitalDoorbellName = config.digitalDoorbellName || 'Digital gong';
 
     /*
      *
      * MECHANICAL DOORBELL SWITCH
-     * 
+     *
      */
-    this.mechanicalDoorbellSwitchService = new hap.Service.Switch(this.mechanicalDoorbellName, "mechanicalDoorbellSwitch");
+    this.mechanicalDoorbellSwitchService = new hap.Service.Switch(this.mechanicalDoorbellName, 'mechanicalDoorbellSwitch');
     this.mechanicalDoorbellSwitchService.getCharacteristic(hap.Characteristic.On)
       .onGet(() => this.isMechanicalDoorbellActive())
       .onSet((newValue) => this.setMechanicalDoorbellActive(Boolean(newValue)));
@@ -54,20 +55,20 @@ export class ShellyDoorbell implements AccessoryPlugin {
     /*
      *
      * DIGITAL DOORBELL SWITCH
-     * 
+     *
      */
-    this.digitalDoorbellSwitchService = new hap.Service.Switch(this.digitalDoorbellName, "digitalDoorbellSwitch");
+    this.digitalDoorbellSwitchService = new hap.Service.Switch(this.digitalDoorbellName, 'digitalDoorbellSwitch');
     this.digitalDoorbellSwitchService.getCharacteristic(hap.Characteristic.On)
       .onGet(() => this.isDigitalDoorbellActive())
       .onSet((newValue) => this.setDigitalDoorbellActive(Boolean(newValue)));
 
-      
+
     /*
      *
      * MOTION SENSOR
      *
      */
-    this.motionSensorService = new hap.Service.MotionSensor(this.name, "doorbellMotionSensor");
+    this.motionSensorService = new hap.Service.MotionSensor(this.name, 'doorbellMotionSensor');
     this.motionSensorService.getCharacteristic(hap.Characteristic.MotionDetected)
       .onGet(() => this.doorbellRang);
 
@@ -78,8 +79,8 @@ export class ShellyDoorbell implements AccessoryPlugin {
 
       this.doorbellMotionDetected();
 
-      if (await this.isDigitalDoorbellActive() == false) {
-        log.info("Somebody rang the (digital) doorbell, but this was ignored because it's muted!");
+      if (await this.isDigitalDoorbellActive() === false) {
+        log.info('Somebody rang the (digital) doorbell, but this was ignored because it\'s muted!');
         response.end('Digital doorbell was ignored because it is muted.');
         return;
       }
@@ -95,17 +96,17 @@ export class ShellyDoorbell implements AccessoryPlugin {
     /*
      *
      * DOORBELL ACCESSORY INFORMATION
-     * 
+     *
      */
 
     this.doorbellInformationService = new hap.Service.AccessoryInformation()
-      .setCharacteristic(hap.Characteristic.Manufacturer, "sl1nd")
-      .setCharacteristic(hap.Characteristic.Model, "Shelly Doorbell");
+      .setCharacteristic(hap.Characteristic.Manufacturer, 'sl1nd')
+      .setCharacteristic(hap.Characteristic.Model, 'Shelly Doorbell');
 
     // link services
     this.mechanicalDoorbellSwitchService.addLinkedService(this.digitalDoorbellSwitchService);
 
-    log.info("Doorbell '%s' created!", this.name);
+    log.info('Doorbell \'%s\' created!', this.name);
   }
 
   /*
@@ -113,7 +114,7 @@ export class ShellyDoorbell implements AccessoryPlugin {
    * Typical this only ever happens at the pairing process.
    */
   identify(): void {
-    this.log("Identify!");
+    this.log('Identify!');
   }
 
   /*
@@ -138,7 +139,7 @@ export class ShellyDoorbell implements AccessoryPlugin {
     const url = 'http://'+this.shelly1IP+this.shelly1SettingsURL+'?btn_type=' + (active ? 'action' : 'detached');
     return axios.get(
       url,
-      this.axios_args
+      this.axios_args,
     ).then((response) => {
       this.log.debug('Response from Shelly: ' + JSON.stringify(response.data));
       return response.data.btn_type === (active ? 'action' : 'detached');
@@ -157,7 +158,7 @@ export class ShellyDoorbell implements AccessoryPlugin {
     const url = 'http://'+this.shelly1IP+this.shelly1SettingsURL;
     return axios.get(
       url,
-      this.axios_args
+      this.axios_args,
     ).then((response) => {
       this.log.debug('Response from Shelly: ' + JSON.stringify(response.data));
       return response.data.btn_type !== 'detached';
@@ -171,12 +172,12 @@ export class ShellyDoorbell implements AccessoryPlugin {
   /*
    * The state of the digital doorbell is persisted to keep the user setting after every reboot.
    */
-  private _digitalDoorbellActive: boolean | null = null;
+  private _digitalDoorbellActive: boolean | null = null;
 
   private async isDigitalDoorbellActive() {
-    if (this._digitalDoorbellActive == null) {
+    if (this._digitalDoorbellActive === null) {
       const localStorage = await this.getLocalStorage();
-      var config = await localStorage.getItem(this.storageItemName);
+      let config = await localStorage.getItem(this.storageItemName);
       if (config === undefined) {
         config = { digitalDoorbellActive: true }; // default state is on
       }
@@ -193,8 +194,8 @@ export class ShellyDoorbell implements AccessoryPlugin {
   }
 
   async getLocalStorage(): Promise<LocalStorage> {
-    var localStorage = NodePersist.create();
-    var path = this.api.user.storagePath() + '/plugin-persist/homebridge-shelly-doorbell';
+    const localStorage = NodePersist.create();
+    const path = this.api.user.storagePath() + '/plugin-persist/homebridge-shelly-doorbell';
     await localStorage.init({ dir: path });
     return localStorage;
   }

@@ -1,12 +1,12 @@
-import {AccessoryPlugin, API, HAP, Logging, PlatformConfig, StaticPlatformPlugin,} from "homebridge";
-import { config } from "process";
-import {ShellyDoorbell} from "./shelly-doorbell-accessory";
-const PLATFORM_NAME = "ShellyDoorbell";
+import {AccessoryPlugin, API, HAP, Logging, PlatformConfig, StaticPlatformPlugin } from 'homebridge';
+import {ShellyDoorbell} from './shelly-doorbell-accessory';
+const PLATFORM_NAME = 'ShellyDoorbell';
 
 /*
  * IMPORTANT NOTICE
  *
- * One thing you need to take care of is, that you never ever ever import anything directly from the "homebridge" module (or the "hap-nodejs" module).
+ * One thing you need to take care of is, that you never ever ever import anything directly from the "homebridge" module (or the
+ * "hap-nodejs" module).
  * The above import block may seem like, that we do exactly that, but actually those imports are only used for types and interfaces
  * and will disappear once the code is compiled to Javascript.
  * In fact you can check that by running `npm run build` and opening the compiled Javascript file in the `dist` folder.
@@ -47,7 +47,7 @@ class ShellyDoorbellPlatform implements StaticPlatformPlugin {
     this.config = config;
 
     // probably parse config or something here
-    log.info("Shelly doorbell platform finished initializing!");
+    log.info('Shelly doorbell platform finished initializing!');
   }
 
   /*
@@ -57,9 +57,9 @@ class ShellyDoorbellPlatform implements StaticPlatformPlugin {
    * The set of exposed accessories CANNOT change over the lifetime of the plugin!
    */
   async accessories(callback: (foundAccessories: AccessoryPlugin[]) => void): Promise<void> {
-    var shellyDoorbells:ShellyDoorbell[] = [];
+    const shellyDoorbells:ShellyDoorbell[] = [];
 
-    await Promise.all(this.config.doorbells.map(async (doorbellConfig:any,doorbellIndex:number) => {
+    await Promise.all(this.config.doorbells.map(async (doorbellConfig:any, doorbellIndex:number) => {
       shellyDoorbells[doorbellIndex] = new ShellyDoorbell(this.api, hap, this.log, doorbellConfig);
     }));
 
