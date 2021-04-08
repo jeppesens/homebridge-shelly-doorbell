@@ -80,4 +80,4 @@ On the right side you can enable and disable your "mechanical gong". Both names 
 
 # Enjoy your smart doorbell 🚪🛎👍
 
-Please note: The authors of this plugin cannot assume any guarantees that the contents of this README are correct.
+**Note:** The authors of this plugin cannot assume any guarantees that the contents of this README are correct.
