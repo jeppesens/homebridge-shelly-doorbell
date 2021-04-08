@@ -9,7 +9,7 @@ That means you can get a push notification when someone rings your doorbell and 
 **Requirements**  
 
 * Shelly 1 (12 EUR)  
-* 12V DC Driver (12 EUR)  
+* 12V DC Power Supply (12 EUR)  
 * Some wires and clamps
 * Running Homebridge with this plugin installed
 * **If you are not qualified and licensed to do electrical work, you will need an electrician to help you.**
@@ -24,7 +24,7 @@ If your existing doorbell is installed and switched like this, you can make it "
 
 # Hardware (Shelly 1) installation
 
-The special thing about this setup is that the Shelly 1 is powered by 12V DC so we can connect it to the doorbell.
+The special thing about this setup is that the Shelly 1 is powered by a 12V DC power supply, so we can safely connect it to the doorbell. Under no circumstances should higher voltages be applied to the thin doorbell wires.
 
 ![alt text](img/wiring-after-with-shelly.png "Title 1")
 
@@ -36,7 +36,7 @@ To trigger a digital gong you have to check "Enabled" on the Shelly under "I/O U
 
 ```
 http://<homebridge-ip>:<shelly-doorbell-http-port>/ 
-http://192.168.0.99:9053/
+e.g. http://192.168.0.99:9053/
 ```
 
 **Warning:** Please also turn off "Settings" -> "FACTORY RESET" -> "Enable factory reset from switch" so that no one can reset your shelly via the doorbell.
@@ -80,4 +80,4 @@ On the right side you can enable and disable your "mechanical gong". Both names 
 
 # Enjoy your smart doorbell 🚪🛎👍
 
-
+Please note: The authors of this plugin cannot assume any guarantees that the contents of this README are correct.
