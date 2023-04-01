@@ -114,6 +114,8 @@ export class ShellyDoorbell implements AccessoryPlugin {
       this.log.debug('Input.SetConfig', JSON.stringify(response.data));
       return response;
     });
+    const isActive = await this.isMechanicalDoorbellActive();
+    await this.setMechanicalDoorbell(isActive);
     return true;
   }
 
@@ -163,12 +165,14 @@ export class ShellyDoorbell implements AccessoryPlugin {
         'method': 'Switch.SetConfig',
         'params': {
           'id': 0,
-          'name': null,
-          'in_mode': active ? 'follow' : 'detached',
-          'initial_state': 'off',
-          'auto_on': false,
-          'auto_off': true,
-          'auto_off_delay': 0.20,
+          'config': {
+            'name': null,
+            'in_mode': active ? 'momentary' : 'detached',
+            'initial_state': 'off',
+            'auto_on': false,
+            'auto_off': true,
+            'auto_off_delay': 0.20,
+          },
         },
       },
       this.axios_args,
