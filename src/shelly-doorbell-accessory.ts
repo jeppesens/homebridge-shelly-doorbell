@@ -106,11 +106,12 @@ export class ShellyDoorbell implements AccessoryPlugin {
 
   async setup(): Promise<boolean> {
     // https://shelly-api-docs.shelly.cloud/gen2/ComponentsAndServices/Input#configuration
-    await axios.post(this.shellyUrl, {
+    const inputConfig = {
       'id':1,
       'method':'Input.SetConfig',
       'params':{'id':0, 'config':{'type':'button'}},
-    }).then((response) => {
+    };
+    await axios.post(this.shellyUrl, inputConfig).then((response) => {
       this.log.debug('Input.SetConfig', JSON.stringify(response.data));
       return response;
     });
@@ -141,7 +142,9 @@ export class ShellyDoorbell implements AccessoryPlugin {
 
     const existingHook = webhooks.data.hooks?.find((hook) => hook.name === this.hookName);
     if (existingHook) {
-      this.log.debug('Webhook.Update: ', JSON.stringify(existingHook));
+      this.log.debug('Webhook to update: ', JSON.stringify(existingHook));
+    } else {
+      this.log.debug('No Webhook found to update');
     }
 
     const webhookPayload = {
@@ -149,7 +152,7 @@ export class ShellyDoorbell implements AccessoryPlugin {
       'method': existingHook ? 'Webhook.Update' : 'Webhook.Create',
       'params':{
         'id': existingHook?.id || 0,
-        'enable': active,
+        'enable': true,
         'event':'input.button_push',
         'urls':[`http://${this.homebridgeIp}:${this.digitalDoorbellWebhookPort}`],
         'name':this.hookName,
