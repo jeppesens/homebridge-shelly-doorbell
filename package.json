@@ -9,7 +9,7 @@
     "build": "rimraf ./dist && tsc",
     "prepublishOnly": "npm run lint && npm run build"
   },
-  "author": "sl1nd <npm@slind.de>",
+  "contributors": ["sl1nd <npm@slind.de> (https://gitlab.com/lindenmueller)", "jeppesens <github@tobiasjppesen.com> (https://github.com/jeppesens)"],
   "engines": {
     "homebridge": ">=1.0.0"
   },
@@ -27,10 +27,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://gitlab.com/ca-iot/homebridge-shelly-doorbell.git"
+    "url": "https://github.com/jeppesens/homebridge-shelly-doorbell.git"
   },
   "bugs": {
-    "url": "https://gitlab.com/ca-iot/homebridge-shelly-doorbell/issues"
+    "url": "https://github.com/jeppesens/homebridge-shelly-doorbell/issues"
   },
   "devDependencies": {
     "@types/node": "^14.14.31",
