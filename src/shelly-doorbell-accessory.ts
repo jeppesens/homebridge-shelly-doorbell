@@ -159,9 +159,10 @@ export class ShellyDoorbell implements AccessoryPlugin {
     await axios.post(
       this.shellyUrl,
       {
+        'id': 1,
         'method': 'Switch.SetConfig',
         'params': {
-          'id': 1,
+          'id': 0,
           'name': null,
           'in_mode': active ? 'follow' : 'detached',
           'initial_state': 'off',
