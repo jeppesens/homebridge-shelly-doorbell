@@ -134,50 +134,55 @@ export class ShellyDoorbell implements AccessoryPlugin {
     }>(
       this.shellyUrl+'/Webhook.List',
       this.axios_args,
-    );
-
-    const update = !!webhooks.data.hooks?.find((hook) => hook.name === this.hookName);
-
-    // https://shelly-api-docs.shelly.cloud/gen2/ComponentsAndServices/Webhook
-    await axios.post(
-      this.shellyUrl,
-      {
-        'id':1,
-        'method': update ? 'Webhook.Update' : 'Webhook.Create',
-        'params':{
-          'cid':0,
-          'enable': active,
-          'event':'input.button_push',
-          'urls':[`http://${this.homebridgeIp}:${this.digitalDoorbellWebhookPort}`],
-          'name':this.hookName,
-        },
-      },
-      this.axios_args,
     ).then((response) => {
-      this.log.debug('Response from Shelly: ' + JSON.stringify(response.data));
+      this.log.debug('Webhook.List: ', JSON.stringify(response.data));
       return response;
     });
 
+    const update = webhooks.data.hooks?.find((hook) => hook.name === this.hookName);
+
+    const webhookPayload = {
+      'id': 1,
+      'method': update ? 'Webhook.Update' : 'Webhook.Create',
+      'params':{
+        'cid': update?.cid ?? (webhooks.data.hooks?.length || 0),
+        'enable': active,
+        'event':'input.button_push',
+        'urls':[`http://${this.homebridgeIp}:${this.digitalDoorbellWebhookPort}`],
+        'name':this.hookName,
+      },
+    };
+    // https://shelly-api-docs.shelly.cloud/gen2/ComponentsAndServices/Webhook
     await axios.post(
       this.shellyUrl,
-      {
-        'id': 1,
-        'method': 'Switch.SetConfig',
-        'params': {
-          'id': 0,
-          'config': {
-            'name': null,
-            'in_mode': active ? 'momentary' : 'detached',
-            'initial_state': 'off',
-            'auto_on': false,
-            'auto_off': true,
-            'auto_off_delay': 0.20,
-          },
-        },
-      },
+      webhookPayload,
       this.axios_args,
     ).then((response) => {
-      this.log.debug('Response from Shelly: ' + JSON.stringify(response.data));
+      this.log.debug(`${JSON.stringify(webhookPayload)} : ` + JSON.stringify(response.data));
+      return response;
+    });
+
+    const switchConfig = {
+      'id': 1,
+      'method': 'Switch.SetConfig',
+      'params': {
+        'id': 0,
+        'config': {
+          'name': null,
+          'in_mode': active ? 'momentary' : 'detached',
+          'initial_state': 'off',
+          'auto_on': false,
+          'auto_off': true,
+          'auto_off_delay': 0.20,
+        },
+      },
+    };
+    await axios.post(
+      this.shellyUrl,
+      switchConfig,
+      this.axios_args,
+    ).then((response) => {
+      this.log.debug(`${switchConfig} : ` + JSON.stringify(response.data));
       return response;
     });
     return true;
@@ -222,7 +227,7 @@ export class ShellyDoorbell implements AccessoryPlugin {
       url,
       this.axios_args,
     ).then((response) => {
-      this.log.debug('Response from Shelly: ' + JSON.stringify(response.data));
+      this.log.debug('GET /Switch.GetConfig?id=0 : ' + JSON.stringify(response.data));
       return response.data.in_mode !== 'detached';
     }).catch((error) => {
       const msg = 'Error reading doorbell shelly settings type: ' + error + ' at URL ' + url;
