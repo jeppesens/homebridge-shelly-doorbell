@@ -76,7 +76,8 @@ export class ShellyDoorbell implements AccessoryPlugin {
      */
 
     this.doorbellInformationService = new hap.Service.AccessoryInformation()
-      .setCharacteristic(hap.Characteristic.Manufacturer, 'sl1nd')
+      .setCharacteristic(hap.Characteristic.Manufacturer, 'Shelly')
+      .setCharacteristic(hap.Characteristic.SerialNumber, this.shellyIP)
       .setCharacteristic(hap.Characteristic.Model, 'Shelly Doorbell');
 
     this.setup();
