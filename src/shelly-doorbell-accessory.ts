@@ -139,12 +139,16 @@ export class ShellyDoorbell implements AccessoryPlugin {
       return response;
     });
 
-    const update = webhooks.data.hooks?.find((hook) => hook.name === this.hookName);
+    const existingHook = webhooks.data.hooks?.find((hook) => hook.name === this.hookName);
+    if (existingHook) {
+      this.log.debug('Webhook.Update: ', JSON.stringify(existingHook));
+    }
 
     const webhookPayload = {
-      'id': update?.id || 1,
-      'method': update ? 'Webhook.Update' : 'Webhook.Create',
+      'id': 1,
+      'method': existingHook ? 'Webhook.Update' : 'Webhook.Create',
       'params':{
+        'id': existingHook?.id || 0,
         'enable': active,
         'event':'input.button_push',
         'urls':[`http://${this.homebridgeIp}:${this.digitalDoorbellWebhookPort}`],
