@@ -106,10 +106,13 @@ export class ShellyDoorbell implements AccessoryPlugin {
 
   async setup(): Promise<boolean> {
     // https://shelly-api-docs.shelly.cloud/gen2/ComponentsAndServices/Input#configuration
-    await axios.post(this.shellyUrl+'?id=0&type=button', {
+    await axios.post(this.shellyUrl, {
       'id':1,
       'method':'Input.SetConfig',
       'params':{'id':0, 'config':{'type':'button'}},
+    }).then((response) => {
+      this.log.debug('Input.SetConfig', JSON.stringify(response.data));
+      return response;
     });
     return true;
   }
@@ -158,14 +161,13 @@ export class ShellyDoorbell implements AccessoryPlugin {
       {
         'method': 'Switch.SetConfig',
         'params': {
-          'id': 0,
+          'id': 1,
           'name': null,
           'in_mode': active ? 'follow' : 'detached',
-          'initial_state':'off',
-          'auto_on':false,
-          'auto_on_delay':60.00,
-          'auto_off':true,
-          'auto_off_delay':0.20,
+          'initial_state': 'off',
+          'auto_on': false,
+          'auto_off': true,
+          'auto_off_delay': 0.20,
         },
       },
       this.axios_args,

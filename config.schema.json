@@ -3,7 +3,7 @@
   "pluginType": "platform",
   "singular": true,
   "headerDisplay": "Homebridge plugin for a Shelly 1 Plus driven HomeKit doorbell.",
-  "footerDisplay": "Use your Shelly 1 and a 12V DC driver to make any two-wire doorbell smart.",
+  "footerDisplay": "Use your Shelly 1 Plus and a 12V DC driver to make any two-wire doorbell smart.",
   "schema": {
     "type": "object",
     "properties": {
