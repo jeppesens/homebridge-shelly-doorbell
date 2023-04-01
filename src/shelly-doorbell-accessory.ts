@@ -1,7 +1,8 @@
-import { AccessoryPlugin, API, HAP, Logging, Service } from 'homebridge';
-import { createServer, IncomingMessage, ServerResponse } from 'http';
 import axios, { AxiosRequestConfig } from 'axios';
+import { API, AccessoryPlugin, HAP, Logging, Service } from 'homebridge';
+import { IncomingMessage, ServerResponse, createServer } from 'http';
 import NodePersist, { LocalStorage } from 'node-persist';
+import { Config } from './Config';
 
 export class ShellyDoorbell implements AccessoryPlugin {
 
@@ -10,36 +11,41 @@ export class ShellyDoorbell implements AccessoryPlugin {
 
   // This property must be existent!!
   name: string;
-  shelly1IP: string;
+  shellyIP: string;
   digitalDoorbellWebhookPort: number;
   mechanicalDoorbellName: string;
-  digitalDoorbellName: string;
   doorbellRang = false;
+  homebridgeIp: string;
 
   private readonly doorbellInformationService: Service; // Shows information about this accessory
   private readonly digitalDoorbellService: Service; // The HomeKit service for doorbell events
-  private readonly digitalDoorbellSwitchService: Service; // A switch to turn digital doorbell ringing on and off
   private readonly mechanicalDoorbellSwitchService: Service; // A switch to turn the mechanical door gong on and off
-  private readonly motionSensorService: Service; // The HomeKit service for doorbell events
 
-  private readonly shelly1SettingsURL = '/settings/relay/0';
+  private get shellyUrl() {
+    return 'http://' + this.shellyIP + '/rpc';
+  }
+
+  private readonly hookName = 'Homebridge Doorbell';
+
   private axios_args: AxiosRequestConfig = {};
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  constructor(api: API, hap: HAP, log: Logging, config: any) {
+  constructor(api: API, hap: HAP, log: Logging, config: Config) {
     this.log = log;
     this.api = api;
     this.name = config.name || 'Doorbell';
-    this.shelly1IP = config.shelly1IP; //required
-    if (config.shelly1Username) {
+    this.shellyIP = config.shellyIP; //required
+    this.homebridgeIp = config.homebridgeIp;
+    if (config.shellyUsername && config.shellyPassword) {
       this.axios_args.auth = {
-        username: config.shelly1Username,
-        password: config.shelly1Password,
+        username: config.shellyUsername,
+        password: config.shellyPassword,
       };
+    } else {
+      this.log.info('No username and password provided for Shelly device');
     }
     this.digitalDoorbellWebhookPort = config.digitalDoorbellWebhookPort; // required
     this.mechanicalDoorbellName = config.mechanicalDoorbellName || 'Mechanical gong';
-    this.digitalDoorbellName = config.digitalDoorbellName || 'Digital gong';
 
     /*
      *
@@ -51,41 +57,11 @@ export class ShellyDoorbell implements AccessoryPlugin {
       .onGet(() => this.isMechanicalDoorbellActive())
       .onSet((newValue) => this.setMechanicalDoorbellActive(Boolean(newValue)));
 
-
-    /*
-     *
-     * DIGITAL DOORBELL SWITCH
-     *
-     */
-    this.digitalDoorbellSwitchService = new hap.Service.Switch(this.digitalDoorbellName, 'digitalDoorbellSwitch');
-    this.digitalDoorbellSwitchService.getCharacteristic(hap.Characteristic.On)
-      .onGet(() => this.isDigitalDoorbellActive())
-      .onSet((newValue) => this.setDigitalDoorbellActive(Boolean(newValue)));
-
-
-    /*
-     *
-     * MOTION SENSOR
-     *
-     */
-    this.motionSensorService = new hap.Service.MotionSensor(this.name, 'doorbellMotionSensor');
-    this.motionSensorService.getCharacteristic(hap.Characteristic.MotionDetected)
-      .onGet(() => this.doorbellRang);
-
     this.digitalDoorbellService = new hap.Service.Doorbell(this.name);
 
     // create a webserver that can trigger digital doorbell rings
     createServer(async (request: IncomingMessage, response: ServerResponse) => {
-
-      this.doorbellMotionDetected();
-
-      if (await this.isDigitalDoorbellActive() === false) {
-        log.info('Somebody rang the (digital) doorbell, but this was ignored because it\'s muted!');
-        response.end('Digital doorbell was ignored because it is muted.');
-        return;
-      }
-
-      // tell homekit to ring the bell
+      // tell Homekit to ring the bell
       this.digitalDoorbellService.getCharacteristic(hap.Characteristic.ProgrammableSwitchEvent).updateValue(0);
       response.end('Doorbell rang!');
 
@@ -100,11 +76,11 @@ export class ShellyDoorbell implements AccessoryPlugin {
      */
 
     this.doorbellInformationService = new hap.Service.AccessoryInformation()
-      .setCharacteristic(hap.Characteristic.Manufacturer, 'sl1nd')
+      .setCharacteristic(hap.Characteristic.Manufacturer, 'Shelly')
+      .setCharacteristic(hap.Characteristic.SerialNumber, this.shellyIP)
       .setCharacteristic(hap.Characteristic.Model, 'Shelly Doorbell');
 
-    // link services
-    this.mechanicalDoorbellSwitchService.addLinkedService(this.digitalDoorbellSwitchService);
+    this.setup();
 
     log.info('Doorbell \'%s\' created!', this.name);
   }
@@ -125,29 +101,113 @@ export class ShellyDoorbell implements AccessoryPlugin {
     return [
       this.doorbellInformationService,
       this.digitalDoorbellService,
-      this.digitalDoorbellSwitchService,
       this.mechanicalDoorbellSwitchService,
-      this.motionSensorService,
     ];
+  }
+
+  async setup(): Promise<boolean> {
+    // https://shelly-api-docs.shelly.cloud/gen2/ComponentsAndServices/Input#configuration
+    const inputConfig = {
+      'id':1,
+      'method':'Input.SetConfig',
+      'params':{'id':0, 'config':{'type':'button'}},
+    };
+    await axios.post(this.shellyUrl, inputConfig).then((response) => {
+      this.log.debug('Input.SetConfig', JSON.stringify(response.data));
+      return response;
+    });
+    const isActive = await this.isMechanicalDoorbellActive();
+    await this.setMechanicalDoorbell(isActive);
+    return true;
+  }
+
+  async setMechanicalDoorbell(active: boolean): Promise<true> {
+    const webhooks = await axios.get<{
+      hooks: Array<{
+        id: number;
+        cid: number;
+        enable: boolean;
+        event:string;
+        name:string;
+        urls: Array<string>;
+        condition: unknown;
+        repeat_period: number;
+      }>;
+    }>(
+      this.shellyUrl+'/Webhook.List',
+      this.axios_args,
+    ).then((response) => {
+      this.log.debug('Webhook.List: ', JSON.stringify(response.data));
+      return response;
+    });
+
+    const existingHook = webhooks.data.hooks?.find((hook) => hook.name === this.hookName);
+    if (existingHook) {
+      this.log.debug('Webhook to update: ', JSON.stringify(existingHook));
+    } else {
+      this.log.debug('No Webhook found to update');
+    }
+
+    const webhookPayload = {
+      'id': 1,
+      'method': existingHook ? 'Webhook.Update' : 'Webhook.Create',
+      'params':{
+        'id': existingHook?.id || 0,
+        'enable': true,
+        'event':'input.button_push',
+        'urls':[`http://${this.homebridgeIp}:${this.digitalDoorbellWebhookPort}`],
+        'name':this.hookName,
+      },
+    };
+    // https://shelly-api-docs.shelly.cloud/gen2/ComponentsAndServices/Webhook
+    await axios.post(
+      this.shellyUrl,
+      webhookPayload,
+      this.axios_args,
+    ).then((response) => {
+      this.log.debug(`${JSON.stringify(webhookPayload)} : ` + JSON.stringify(response.data));
+      return response;
+    });
+
+    const switchConfig = {
+      'id': 1,
+      'method': 'Switch.SetConfig',
+      'params': {
+        'id': 0,
+        'config': {
+          'name': null,
+          'in_mode': active ? 'momentary' : 'detached',
+          'initial_state': 'off',
+          'auto_on': false,
+          'auto_off': true,
+          'auto_off_delay': 0.20,
+        },
+      },
+    };
+    await axios.post(
+      this.shellyUrl,
+      switchConfig,
+      this.axios_args,
+    ).then((response) => {
+      this.log.debug(`${switchConfig} : ` + JSON.stringify(response.data));
+      return response;
+    });
+    return true;
   }
 
   /*
    * This method can activate and deactivate the mechanical gong connected to a Shelly 1 relay by
    * setting the Button Type to "Activation Switch" (activated) or "Detached Switch" (deactivated).
    */
-  async setMechanicalDoorbellActive(active:boolean): Promise<boolean> {
-    const url = 'http://'+this.shelly1IP+this.shelly1SettingsURL+'?btn_type=' + (active ? 'action' : 'detached');
-    return axios.get(
-      url,
-      this.axios_args,
-    ).then((response) => {
-      this.log.debug('Response from Shelly: ' + JSON.stringify(response.data));
-      return response.data.btn_type === (active ? 'action' : 'detached');
-    }).catch((error) => {
-      const msg = 'Error setting doorbell shelly button type: ' + error + ' with URL ' + url;
+  async setMechanicalDoorbellActive(active: boolean): Promise<true> {
+    try {
+      await this.setMechanicalDoorbell(active);
+      return true;
+    } catch (error) {
+      const msg = 'Error setting doorbell shelly button type: ' + error + ' with URL ' + this.shellyUrl;
       this.log.error(msg);
       throw new Error(msg);
-    });
+    }
   }
 
   /*
@@ -155,42 +215,32 @@ export class ShellyDoorbell implements AccessoryPlugin {
    * because then it doesn't activates it's relay and the mechanical gong will not be triggered.
    */
   async isMechanicalDoorbellActive(): Promise<boolean> {
-    const url = 'http://'+this.shelly1IP+this.shelly1SettingsURL;
-    return axios.get(
+    const url = this.shellyUrl+'/Switch.GetConfig?id=0';
+    return axios.get<{
+      'id': 0;
+      'name': string;
+      'in_mode': string;
+      'initial_state': string;
+      'auto_on': boolean;
+      'auto_on_delay': number;
+      'auto_off': boolean;
+      'auto_off_delay': number;
+      'autorecover_voltage_errors': boolean;
+      'power_limit': number;
+      'voltage_limit': number;
+      'undervoltage_limit': number;
+      'current_limit': number;
+    }>(
       url,
       this.axios_args,
     ).then((response) => {
-      this.log.debug('Response from Shelly: ' + JSON.stringify(response.data));
-      return response.data.btn_type !== 'detached';
+      this.log.debug('GET /Switch.GetConfig?id=0 : ' + JSON.stringify(response.data));
+      return response.data.in_mode !== 'detached';
     }).catch((error) => {
       const msg = 'Error reading doorbell shelly settings type: ' + error + ' at URL ' + url;
       this.log.error(msg);
       throw new Error(msg);
     });
-  }
-
-  /*
-   * The state of the digital doorbell is persisted to keep the user setting after every reboot.
-   */
-  private _digitalDoorbellActive: boolean | null = null;
-
-  private async isDigitalDoorbellActive() {
-    if (this._digitalDoorbellActive === null) {
-      const localStorage = await this.getLocalStorage();
-      let config = await localStorage.getItem(this.storageItemName);
-      if (config === undefined) {
-        config = { digitalDoorbellActive: true }; // default state is on
-      }
-      this._digitalDoorbellActive = config.digitalDoorbellActive;
-    }
-    return this._digitalDoorbellActive;
-  }
-
-  private async setDigitalDoorbellActive(active:boolean) {
-    const localStorage = await this.getLocalStorage();
-    await localStorage.setItem(this.storageItemName, { digitalDoorbellActive: active });
-    this._digitalDoorbellActive = active;
-    this.log.info(this.digitalDoorbellName + ' was ' + (active ? 'activated' : 'disabled') + '.');
   }
 
   async getLocalStorage(): Promise<LocalStorage> {
@@ -201,18 +251,6 @@ export class ShellyDoorbell implements AccessoryPlugin {
   }
 
   get storageItemName(): string {
-    return this.name + '-' + this.shelly1IP;
-  }
-
-  /*
-   * Trigger the Motion sensor and set it back after 5 seconds.
-   */
-  private doorbellMotionDetected() {
-    this.doorbellRang = true;
-    this.motionSensorService.getCharacteristic(this.api.hap.Characteristic.MotionDetected).updateValue(this.doorbellRang);
-    setTimeout(() => {
-      this.doorbellRang = false;
-      this.motionSensorService.getCharacteristic(this.api.hap.Characteristic.MotionDetected).updateValue(this.doorbellRang);
-    }, 5000);
+    return this.name + '-' + this.shellyIP;
   }
 }

@@ -2,17 +2,24 @@
   "pluginAlias": "ShellyDoorbell",
   "pluginType": "platform",
   "singular": true,
-  "headerDisplay": "Homebridge plugin for a Shelly 1 driven HomeKit doorbell.",
-  "footerDisplay": "Use your Shelly 1 and a 12V DC driver to make any two-wire doorbell smart.",
+  "headerDisplay": "Homebridge plugin for a Shelly 1 Plus driven HomeKit doorbell.",
+  "footerDisplay": "Use your Shelly 1 Plus and a 12V DC driver to make any two-wire doorbell smart.",
   "schema": {
     "type": "object",
     "properties": {
       "name": {
         "title": "Name",
         "type": "string",
-        "default": "Shelly 1-Doorbells",
+        "default": "Shelly 1 Plus-Doorbells",
         "required": false,
         "description": "Plugin name (visible in the log files)"
+      },
+      "homebridgeIp": {
+        "title": "Homebridge IP",
+        "type": "string",
+        "placeholder": "10.0.1.2",
+        "required": true,
+        "description": "IP of your Homebridge server"
       },
       "doorbells": {
         "type": "array",
@@ -26,19 +33,19 @@
               "placeholder": "Doorbell",
               "required": false
             },
-            "shelly1IP": {
-              "title": "IP of your Shelly 1",
+            "shellyIP": {
+              "title": "IP of your Shelly",
               "type": "string",
               "placeholder": "192.168.0.100",
               "required": true
             },
-            "shelly1Username": {
+            "shellyUsername": {
               "title": "Username for your Shelly 1",
               "type": "string",
               "placeholder": "admin",
               "required": false
             },
-            "shelly1Password": {
+            "shellyPassword": {
               "title": "Password for your Shelly 1",
               "type": "string",
               "placeholder": "password",
@@ -55,12 +62,6 @@
               "type": "string",
               "placeholder": "Mechanical gong",
               "required": false
-            },
-            "digitalDoorbellName": {
-              "title": "Name for the digital doorbell",
-              "type": "string",
-              "placeholder": "Digital gong",
-              "required": false
             }
           }
         }
@@ -69,19 +70,21 @@
   },
   "form": [
     "name",
+    "homebridgeIp",
     {
       "type": "fieldset",
       "expandable": true,
       "title": "Doorbell Configurations",
+      "homebridgeIp": "homebridgeIp",
       "items": [
         {
           "key": "doorbells",
           "type": "array",
           "items": [
             "doorbells[].name",
-            "doorbells[].shelly1IP",
-            "doorbells[].shelly1Username",
-            "doorbells[].shelly1Password",
+            "doorbells[].shellyIP",
+            "doorbells[].shellyUsername",
+            "doorbells[].shellyPassword",
             "doorbells[].digitalDoorbellWebhookPort",
             "doorbells[].mechanicalDoorbellName",
             "doorbells[].digitalDoorbellName"
