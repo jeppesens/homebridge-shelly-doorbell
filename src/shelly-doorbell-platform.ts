@@ -1,5 +1,6 @@
-import {AccessoryPlugin, API, HAP, Logging, PlatformConfig, StaticPlatformPlugin } from 'homebridge';
-import {ShellyDoorbell} from './shelly-doorbell-accessory';
+import { AccessoryPlugin, API, HAP, Logging, PlatformConfig, StaticPlatformPlugin } from 'homebridge';
+import { Config } from './Config';
+import { ShellyDoorbell } from './shelly-doorbell-accessory';
 const PLATFORM_NAME = 'ShellyDoorbell';
 
 /*
@@ -30,7 +31,13 @@ let hap: HAP;
 export = (api: API) => {
   hap = api.hap;
 
-  api.registerPlatform(PLATFORM_NAME, ShellyDoorbellPlatform);
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+  api.registerPlatform(PLATFORM_NAME, ShellyDoorbellPlatform as any);
+};
+
+type DoorbellsConfig = PlatformConfig & {
+  doorbells: Config[];
+  homebridgeIp: string;
 };
 
 class ShellyDoorbellPlatform implements StaticPlatformPlugin {
@@ -38,10 +45,10 @@ class ShellyDoorbellPlatform implements StaticPlatformPlugin {
   private readonly api: API;
   private readonly log: Logging;
 
-  private readonly config: PlatformConfig;
+  private readonly config: DoorbellsConfig;
   private readonly shelly1DeviceInfoURL = '/status';
 
-  constructor(log: Logging, config: PlatformConfig, api: API) {
+  constructor(log: Logging, config: DoorbellsConfig, api: API) {
     this.api = api;
     this.log = log;
     this.config = config;
@@ -59,8 +66,10 @@ class ShellyDoorbellPlatform implements StaticPlatformPlugin {
   async accessories(callback: (foundAccessories: AccessoryPlugin[]) => void): Promise<void> {
     const shellyDoorbells:ShellyDoorbell[] = [];
 
-    await Promise.all(this.config.doorbells.map(async (doorbellConfig:any, doorbellIndex:number) => {
-      shellyDoorbells[doorbellIndex] = new ShellyDoorbell(this.api, hap, this.log, doorbellConfig);
+    await Promise.all(this.config.doorbells.map(async (doorbellConfig, doorbellIndex) => {
+      shellyDoorbells[doorbellIndex] = new ShellyDoorbell(
+        this.api, hap, this.log, {...doorbellConfig, homebridgeIp: this.config.homebridgeIp},
+      );
     }));
 
     callback(shellyDoorbells);
